@@ -48,12 +48,14 @@ export function ApplicationsPageClient({
       <div className="sticky top-0 z-10 flex flex-row items-center justify-between bg-background p-6">
         <h1 className="font-bold text-xl">Application Forms</h1>
         <Dialog>
-          <DialogTrigger>
-            <Button className="ml-2" size="sm" variant="outline">
-              <Plus className="h-4 w-4" />
-              Create Form
-            </Button>
-          </DialogTrigger>
+          <DialogTrigger
+            render={() => (
+              <Button className="ml-2" size="sm" variant="outline">
+                <Plus className="h-4 w-4" />
+                Create Form
+              </Button>
+            )}
+          />
           <DialogContent>
             <CreateFormDialog />
           </DialogContent>

@@ -43,14 +43,16 @@ export const usePresence = <T extends Record<string, unknown>>(
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    void updatePresenceMutation({ room, user, data: initialData });
+    updatePresenceMutation({ room, user, data: initialData });
 
-    return () => {};
+    return () => {
+      // do nothing
+    };
   }, [room, user, initialData, updatePresenceMutation]);
 
   useEffect(() => {
     const intervalId = setInterval(() => {
-      void heartbeatMutation({ room, user });
+      heartbeatMutation({ room, user });
     }, HEARTBEAT_PERIOD);
 
     return () => clearInterval(intervalId);
@@ -66,7 +68,7 @@ export const usePresence = <T extends Record<string, unknown>>(
 
       if (timeSinceLastUpdate >= CURSOR_UPDATE_THROTTLE) {
         lastUpdateRef.current = now;
-        void updatePresenceMutation({ room, user, data: newData });
+        updatePresenceMutation({ room, user, data: newData });
       } else {
         pendingUpdateRef.current = newData;
 
@@ -74,7 +76,7 @@ export const usePresence = <T extends Record<string, unknown>>(
           timeoutRef.current = setTimeout(() => {
             if (pendingUpdateRef.current) {
               lastUpdateRef.current = Date.now();
-              void updatePresenceMutation({
+              updatePresenceMutation({
                 room,
                 user,
                 data: pendingUpdateRef.current,

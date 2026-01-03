@@ -107,7 +107,9 @@ export const listTasksPaginated = query({
     let page = paginationResult.page;
     if (args.searchLabel) {
       page = page.filter((task) =>
-        task.label?.toLowerCase().includes(args.searchLabel?.toLowerCase())
+        task.label
+          ?.toLowerCase()
+          .includes(args.searchLabel?.toLowerCase() ?? "")
       );
     }
 

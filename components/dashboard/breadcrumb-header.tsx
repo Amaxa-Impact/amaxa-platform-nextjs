@@ -39,16 +39,19 @@ export function BreadcrumbHeader() {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink>
-                <Link href="/">Platform</Link>
+              <BreadcrumbLink href="/" render={<Link href="/" />}>
+                Platform
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink>
-                <Link href={`/project/${projectId || projectIdFromPath}`}>
-                  {project.name || "No Project Found"}
-                </Link>
+              <BreadcrumbLink
+                href={`/project/${projectId || projectIdFromPath}`}
+                render={
+                  <Link href={`/project/${projectId || projectIdFromPath}`} />
+                }
+              >
+                {project.name || "No Project Found"}
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />

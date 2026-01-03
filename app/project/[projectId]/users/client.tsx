@@ -2,6 +2,7 @@
 import { useMutation, useQuery } from "convex/react";
 import { useParams } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 import { useDashboardContext } from "@/components/dashboard/context";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,6 +35,7 @@ export function UsersPageContent({ allUsers }: { allUsers: User }) {
 
   const handleRemoveUser = async (userId: string) => {
     if (
+      // biome-ignore lint/suspicious/noAlert: <explanation>
       !confirm("Are you sure you want to remove this user from the project?")
     ) {
       return;
@@ -41,7 +43,7 @@ export function UsersPageContent({ allUsers }: { allUsers: User }) {
     try {
       await removeUser({ userId, projectId });
     } catch (error) {
-      alert(
+      toast.error(
         `Failed to remove user: ${error instanceof Error ? error.message : "Unknown error"}`
       );
     }
@@ -51,7 +53,7 @@ export function UsersPageContent({ allUsers }: { allUsers: User }) {
     try {
       await updateRole({ userId, projectId, role });
     } catch (error) {
-      alert(
+      toast.error(
         `Failed to update role: ${error instanceof Error ? error.message : "Unknown error"}`
       );
     }

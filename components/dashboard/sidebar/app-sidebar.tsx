@@ -1,6 +1,6 @@
 "use client";
 
-import { Layout, Map, PieChart, Settings } from "lucide-react";
+import { Layout, MapIcon, PieChart, Settings } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -35,7 +35,7 @@ export function AppSidebar({
     {
       name: "Users",
       url: `/project/${projectId}/users`,
-      icon: Map,
+      icon: MapIcon,
     },
     ...(isCoach
       ? [

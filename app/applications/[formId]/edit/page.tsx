@@ -8,7 +8,7 @@ import type { Id } from "@/convex/_generated/dataModel";
 
 export default function FormEditorClient() {
   const { formId } = useParams<{ formId: Id<"applicationForms"> }>();
-  const fields = useQuery(api.applicationFormFields.listByForm, { formId });
+  const fields = useQuery(api.applicationFormFields.listByFormId, { formId });
   const form = useApplicationForm();
 
   if (!form) {

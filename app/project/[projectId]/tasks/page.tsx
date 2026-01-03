@@ -346,7 +346,7 @@ function TasksFlowContent() {
       nodes.map((n) => ({
         ...n,
         data: {
-          ...(n.data as TaskNodeData),
+          ...(n.data as unknown as TaskNodeData),
           onStatusChange: (status: TaskNodeData["status"]) =>
             handleStatusChange(n.id, status),
           onDataChange: (data: Partial<TaskNodeData>) =>
@@ -400,7 +400,7 @@ function TasksFlowContent() {
               </span>
               <div className="flex -space-x-2">
                 {othersPresence.slice(0, 5).map((p) => {
-                  const data = p.data as CursorPresenceData;
+                  const data = p.data as unknown as CursorPresenceData;
                   const name = data.name || `User ${p.user.slice(0, 4)}`;
                   const initials =
                     name
@@ -466,11 +466,11 @@ function TasksFlowContent() {
 
         {othersPresence
           ?.filter((p) => {
-            const data = p.data as CursorPresenceData;
+            const data = p.data as unknown as CursorPresenceData;
             return data.x !== 0 || data.y !== 0;
           })
           .map((presence) => {
-            const data = presence.data as CursorPresenceData;
+            const data = presence.data as unknown as CursorPresenceData;
             const pos = getCursorScreenPosition(data.x, data.y);
 
             return (
@@ -521,7 +521,9 @@ function TasksFlowContent() {
                       Delete Task
                     </ContextMenuItem>
                   </>
-                ) : contextMenu.edgeId ? (
+                ) : null}
+
+                {!contextMenu.nodeId && contextMenu.edgeId ? (
                   <ContextMenuItem
                     onClick={() => {
                       if (contextMenu.edgeId) {
@@ -534,7 +536,9 @@ function TasksFlowContent() {
                     <IconTrash className="mr-2 h-4 w-4" />
                     Delete Connection
                   </ContextMenuItem>
-                ) : (
+                ) : null}
+
+                {contextMenu.nodeId || contextMenu.edgeId ? null : (
                   <ContextMenuItem
                     onClick={() => {
                       addNewTask({ x: contextMenu.x, y: contextMenu.y });

@@ -21,7 +21,7 @@ import type * as presence from "../presence.js";
 import type * as projects from "../projects.js";
 import type * as reactFlowExample from "../reactFlowExample.js";
 import type * as tasks from "../tasks.js";
-import type * as userToProject from "../userToProject.js";
+import type * as userToProjects from "../userToProjects.js";
 
 import type {
   ApiFromModules,
@@ -43,7 +43,7 @@ declare const fullApi: ApiFromModules<{
   projects: typeof projects;
   reactFlowExample: typeof reactFlowExample;
   tasks: typeof tasks;
-  userToProject: typeof userToProject;
+  userToProjects: typeof userToProjects;
 }>;
 
 /**

@@ -142,10 +142,7 @@ export default function ResponsesPage() {
           open={selectedResponseId !== null}
         >
           {selectedResponseId && (
-            <ResponseDetailDialog
-              onClose={() => setSelectedResponseId(null)}
-              responseId={selectedResponseId}
-            />
+            <ResponseDetailDialog responseId={selectedResponseId} />
           )}
         </Dialog>
       </main>
@@ -182,6 +179,7 @@ function ResponseRow({
   };
 
   const handleDelete = async () => {
+    // biome-ignore lint/suspicious/noAlert: <explanation>
     if (!confirm("Are you sure you want to delete this application?")) {
       return;
     }
@@ -256,10 +254,8 @@ function ResponseRow({
 
 function ResponseDetailDialog({
   responseId,
-  onClose,
 }: {
   responseId: Id<"applicationResponses">;
-  onClose: () => void;
 }) {
   const response = useQuery(api.applicationResponses.get, { responseId });
   const updateStatus = useMutation(api.applicationResponses.updateStatus);

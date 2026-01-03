@@ -1,8 +1,18 @@
+/* eslint-disable react/jsx-no-undef */
+/** biome-ignore-all lint/correctness/noChildrenProp: This is a workaround to fix the linting error. */
 "use client";
 import { IconCheck, IconPencil, IconX } from "@tabler/icons-react";
+import { useForm } from "@tanstack/react-form";
 import { Handle, type NodeProps, Position } from "@xyflow/react";
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  Field,
+  FieldContent,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -54,69 +64,74 @@ const priorityOptions = [
 ] as const;
 
 export const TaskNode = memo(({ data, id }: NodeProps) => {
-  const taskData = data as TaskNodeData;
+  const taskData = data as unknown as TaskNodeData;
   const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState({
-    label: taskData.label,
-    description: taskData.description || "",
-    assignedTo: taskData.assignedTo || "",
-    priority: taskData.priority || "medium",
-  });
 
   const status = taskData.status || "todo";
   const priority = taskData.priority || "medium";
 
+  const form = useForm({
+    defaultValues: {
+      label: taskData.label,
+      description: taskData.description || "",
+      assignedTo: taskData.assignedTo || "",
+      priority: (taskData.priority || "medium") as "low" | "medium" | "high",
+    },
+    onSubmit: ({ value }) => {
+      if (taskData.onDataChange) {
+        taskData.onDataChange({
+          label: value.label,
+          description: value.description || undefined,
+          assignedTo: value.assignedTo || undefined,
+          priority: value.priority,
+        });
+      }
+      setIsEditing(false);
+    },
+  });
+
+  // Reset form when taskData changes or when entering edit mode
+  useEffect(() => {
+    if (isEditing) {
+      form.setFieldValue("label", taskData.label);
+      form.setFieldValue("description", taskData.description || "");
+      form.setFieldValue("assignedTo", taskData.assignedTo || "");
+      form.setFieldValue(
+        "priority",
+        (taskData.priority || "medium") as "low" | "medium" | "high"
+      );
+    }
+  }, [isEditing, taskData, form]);
+
   const handleStatusChange = useCallback(
-    (newStatus: string) => {
-      if (taskData.onStatusChange) {
+    (newStatus: string | null) => {
+      if (newStatus && taskData.onStatusChange) {
         taskData.onStatusChange(newStatus as TaskNodeData["status"]);
       }
     },
     [taskData]
   );
 
-  const handleEditClick = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      setIsEditing(true);
-      setEditForm({
-        label: taskData.label,
-        description: taskData.description || "",
-        assignedTo: taskData.assignedTo || "",
-        priority: taskData.priority || "medium",
-      });
-    },
-    [taskData]
-  );
+  const handleEditClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsEditing(true);
+  }, []);
 
   const handleSave = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
-      if (taskData.onDataChange) {
-        taskData.onDataChange({
-          label: editForm.label,
-          description: editForm.description || undefined,
-          assignedTo: editForm.assignedTo || undefined,
-          priority: editForm.priority,
-        });
-      }
-      setIsEditing(false);
+      form.handleSubmit();
     },
-    [taskData, editForm]
+    [form]
   );
 
   const handleCancel = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
       setIsEditing(false);
-      setEditForm({
-        label: taskData.label,
-        description: taskData.description || "",
-        assignedTo: taskData.assignedTo || "",
-        priority: taskData.priority || "medium",
-      });
+      form.reset();
     },
-    [taskData]
+    [form]
   );
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -135,104 +150,187 @@ export const TaskNode = memo(({ data, id }: NodeProps) => {
       >
         <Handle className="h-3 w-3" position={Position.Left} type="target" />
 
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center justify-between gap-2">
-            <span className="font-medium text-muted-foreground text-xs">
-              Edit Task
-            </span>
-            <div className="flex gap-1">
-              <Button
-                className="h-6 w-6 p-0"
-                onClick={handleSave}
-                size="sm"
-                variant="ghost"
-              >
-                <IconCheck className="h-3.5 w-3.5 text-green-600" />
-              </Button>
-              <Button
-                className="h-6 w-6 p-0"
-                onClick={handleCancel}
-                size="sm"
-                variant="ghost"
-              >
-                <IconX className="h-3.5 w-3.5 text-red-600" />
-              </Button>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Input
-              autoFocus
-              onChange={(e) =>
-                setEditForm((prev) => ({ ...prev, label: e.target.value }))
-              }
-              onClick={(e) => e.stopPropagation()}
-              placeholder="Task name"
-              value={editForm.label}
-            />
-
-            <Textarea
-              className="min-h-[60px]"
-              onChange={(e) =>
-                setEditForm((prev) => ({
-                  ...prev,
-                  description: e.target.value,
-                }))
-              }
-              onClick={(e) => e.stopPropagation()}
-              placeholder="Description (optional)"
-              value={editForm.description}
-            />
-
-            <div className="flex gap-2">
-              <div className="flex-1">
-                <label className="mb-1 block text-muted-foreground text-xs">
-                  Priority
-                </label>
-                <Select
-                  onValueChange={(value) =>
-                    setEditForm((prev) => ({
-                      ...prev,
-                      priority: value as TaskNodeData["priority"],
-                    }))
-                  }
-                  value={editForm.priority}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            form.handleSubmit();
+          }}
+        >
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-medium text-muted-foreground text-xs">
+                Edit Task
+              </span>
+              <div className="flex gap-1">
+                <Button
+                  className="h-6 w-6 p-0"
+                  onClick={handleSave}
+                  size="sm"
+                  type="submit"
+                  variant="ghost"
                 >
-                  <SelectTrigger
-                    className="w-full"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {priorityOptions.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <IconCheck className="h-3.5 w-3.5 text-green-600" />
+                </Button>
+                <Button
+                  className="h-6 w-6 p-0"
+                  onClick={handleCancel}
+                  size="sm"
+                  type="button"
+                  variant="ghost"
+                >
+                  <IconX className="h-3.5 w-3.5 text-red-600" />
+                </Button>
               </div>
+            </div>
 
-              <div className="flex-1">
-                <label className="mb-1 block text-muted-foreground text-xs">
-                  Assigned To
-                </label>
-                <Input
-                  onChange={(e) =>
-                    setEditForm((prev) => ({
-                      ...prev,
-                      assignedTo: e.target.value,
-                    }))
-                  }
-                  onClick={(e) => e.stopPropagation()}
-                  placeholder="User ID"
-                  value={editForm.assignedTo}
+            <FieldGroup>
+              <form.Field
+                children={(field) => (
+                  <Field>
+                    <FieldLabel htmlFor={`task-${id}-label`}>
+                      Task Name
+                    </FieldLabel>
+                    <FieldContent>
+                      <Input
+                        autoFocus
+                        id={`task-${id}-label`}
+                        name={field.name}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                        placeholder="Task name"
+                        value={field.state.value}
+                      />
+                      {field.state.meta.errors && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                    </FieldContent>
+                  </Field>
+                )}
+                name="label"
+              />
+
+              <form.Field
+                children={(field) => (
+                  <Field>
+                    <FieldLabel htmlFor={`task-${id}-description`}>
+                      Description
+                    </FieldLabel>
+                    <FieldContent>
+                      <Textarea
+                        className="min-h-[60px]"
+                        id={`task-${id}-description`}
+                        name={field.name}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                        placeholder="Description (optional)"
+                        value={field.state.value}
+                      />
+                      {field.state.meta.errors && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                    </FieldContent>
+                  </Field>
+                )}
+                name="description"
+              />
+
+              <div className="flex gap-2">
+                <form.Field
+                  children={(field) => (
+                    <Field className="flex-1">
+                      <FieldLabel htmlFor={`task-${id}-priority`}>
+                        Priority
+                      </FieldLabel>
+                      <FieldContent>
+                        <Select
+                          onValueChange={(value) =>
+                            field.handleChange(
+                              value as "low" | "medium" | "high"
+                            )
+                          }
+                          value={field.state.value}
+                        >
+                          <SelectTrigger
+                            className="w-full"
+                            id={`task-${id}-priority`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                            }}
+                            onPointerDown={(e) => {
+                              e.stopPropagation();
+                            }}
+                          >
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {priorityOptions.map((opt) => (
+                              <SelectItem key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {field.state.meta.errors && (
+                          <FieldError errors={field.state.meta.errors} />
+                        )}
+                      </FieldContent>
+                    </Field>
+                  )}
+                  name="priority"
+                />
+
+                <form.Field
+                  children={(field) => (
+                    <Field className="flex-1">
+                      <FieldLabel htmlFor={`task-${id}-assignedTo`}>
+                        Assigned To
+                      </FieldLabel>
+                      <FieldContent>
+                        <Select
+                          onValueChange={(value) => field.handleChange(value)}
+                          value={field.state.value}
+                        >
+                          <SelectTrigger
+                            className="w-full"
+                            id={`task-${id}-assignedTo`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                            }}
+                            onPointerDown={(e) => {
+                              e.stopPropagation();
+                            }}
+                          >
+                            <SelectValue placeholder="Select user..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Unassigned</SelectItem>
+                            {taskData.projectMembers?.map((member) => (
+                              <SelectItem
+                                key={member.userId}
+                                value={member.userId}
+                              >
+                                {member.name || member.userId}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {field.state.meta.errors && (
+                          <FieldError errors={field.state.meta.errors} />
+                        )}
+                      </FieldContent>
+                    </Field>
+                  )}
+                  name="assignedTo"
                 />
               </div>
-            </div>
+            </FieldGroup>
           </div>
-        </div>
+        </form>
 
         <Handle className="h-3 w-3" position={Position.Right} type="source" />
       </div>
@@ -275,7 +373,13 @@ export const TaskNode = memo(({ data, id }: NodeProps) => {
           <Select onValueChange={handleStatusChange} value={status}>
             <SelectTrigger
               className="h-6 w-auto text-xs"
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+              }}
+              onPointerDown={(e) => {
+                e.stopPropagation();
+              }}
               size="sm"
             >
               <SelectValue />
@@ -292,7 +396,10 @@ export const TaskNode = memo(({ data, id }: NodeProps) => {
 
         {taskData.assignedTo && (
           <div className="text-muted-foreground text-xs">
-            Assigned to: {taskData.assignedTo}
+            Assigned to:{" "}
+            {taskData.projectMembers?.find(
+              (m) => m.userId === taskData.assignedTo
+            )?.name || taskData.assignedTo}
           </div>
         )}
       </div>

@@ -1,10 +1,17 @@
+/* eslint-disable react/jsx-no-undef */
+/** biome-ignore-all lint/correctness/noChildrenProp: This is a workaround to fix the linting error. */
 "use client";
-import { FieldDescription } from "@base-ui/react";
-import { Field, useForm } from "@tanstack/react-form";
+import { useForm } from "@tanstack/react-form";
 import { useMutation } from "convex/react";
 import { z } from "zod";
 import { useApplicationForm } from "@/components/application/context";
-import { FieldGroup, FieldLabel } from "@/components/ui/field";
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import { api } from "@/convex/_generated/api";
 
 export default function SettingsPage() {
@@ -45,7 +52,7 @@ export default function SettingsPage() {
                 id={field.name}
                 name={field.name}
                 onBlur={field.handleBlur}
-                onChange={field.handleChange}
+                onChange={(e) => field.handleChange(e.target.value)}
                 value={field.state.value}
               />
               <FieldDescription>

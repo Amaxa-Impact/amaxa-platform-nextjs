@@ -51,9 +51,10 @@ export const update = mutation({
     }
 
     if (args.slug && args.slug !== form.slug) {
+      const newSlug = args.slug;
       const existing = await ctx.db
         .query("applicationForms")
-        .withIndex("by_slug", (q) => q.eq("slug", args.slug!))
+        .withIndex("by_slug", (q) => q.eq("slug", newSlug))
         .unique();
 
       if (existing) {
@@ -112,6 +113,36 @@ export const getBySlug = query({
       .unique();
 
     if (form && !form.isPublished) {
+      return null;
+    }
+
+    return form;
+  },
+});
+
+export const getPublicForm = query({
+  args: {
+    slug: v.string(),
+  },
+  returns: v.union(
+    v.object({
+      _id: v.id("applicationForms"),
+      _creationTime: v.number(),
+      title: v.string(),
+      description: v.optional(v.string()),
+      isPublished: v.boolean(),
+      slug: v.string(),
+      createdBy: v.string(),
+    }),
+    v.null()
+  ),
+  handler: async (ctx, args) => {
+    const form = await ctx.db
+      .query("applicationForms")
+      .withIndex("by_slug", (q) => q.eq("slug", args.slug))
+      .unique();
+
+    if (!form?.isPublished) {
       return null;
     }
 

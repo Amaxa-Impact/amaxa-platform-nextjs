@@ -140,6 +140,47 @@ export const remove = mutation({
 
 export const listByForm = query({
   args: {
+    slug: v.string(),
+  },
+  returns: v.array(
+    v.object({
+      _id: v.id("applicationFormFields"),
+      _creationTime: v.number(),
+      formId: v.id("applicationForms"),
+      label: v.string(),
+      description: v.optional(v.string()),
+      type: fieldTypeValidator,
+      required: v.boolean(),
+      order: v.number(),
+      options: v.optional(v.array(v.string())),
+      min: v.optional(v.number()),
+      max: v.optional(v.number()),
+    })
+  ),
+  handler: async (ctx, args) => {
+    const form = await ctx.db
+      .query("applicationForms")
+      .withIndex("by_slug", (q) => q.eq("slug", args.slug))
+      .unique();
+    if (!form) {
+      throw new Error("Form not found");
+    }
+
+    if (!form.isPublished) {
+      await requireSiteAdmin(ctx);
+    }
+
+    const fields = await ctx.db
+      .query("applicationFormFields")
+      .withIndex("by_form", (q) => q.eq("formId", form._id))
+      .collect();
+
+    return fields.sort((a, b) => a.order - b.order);
+  },
+});
+
+export const listByFormId = query({
+  args: {
     formId: v.id("applicationForms"),
   },
   returns: v.array(
@@ -158,13 +199,11 @@ export const listByForm = query({
     })
   ),
   handler: async (ctx, args) => {
+    await requireSiteAdmin(ctx);
+
     const form = await ctx.db.get(args.formId);
     if (!form) {
       throw new Error("Form not found");
-    }
-
-    if (!form.isPublished) {
-      await requireSiteAdmin(ctx);
     }
 
     const fields = await ctx.db

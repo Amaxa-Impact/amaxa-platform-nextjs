@@ -2,9 +2,9 @@
 "use client";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "convex/react";
-import * as React from "react";
+import React from "react";
 import { toast } from "sonner";
-import * as z from "zod";
+import { z } from "zod";
 import {
   Combobox,
   ComboboxContent,
