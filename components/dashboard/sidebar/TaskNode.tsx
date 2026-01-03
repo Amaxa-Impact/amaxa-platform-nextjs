@@ -144,7 +144,7 @@ export const TaskNode = memo(({ data, id }: NodeProps) => {
     return (
       <div
         className={
-          "min-w-[280px] rounded-lg border-2 bg-card px-3 py-3 text-card-foreground shadow-md"
+          "nodrag nopan min-w-[280px] rounded-lg border-2 bg-card px-3 py-3 text-card-foreground shadow-md"
         }
         onKeyDown={handleKeyDown}
       >
@@ -237,7 +237,7 @@ export const TaskNode = memo(({ data, id }: NodeProps) => {
                 name="description"
               />
 
-              <div className="flex gap-2">
+              <div className="nodrag nopan flex gap-2">
                 <form.Field
                   children={(field) => (
                     <Field className="flex-1">
@@ -256,13 +256,6 @@ export const TaskNode = memo(({ data, id }: NodeProps) => {
                           <SelectTrigger
                             className="w-full"
                             id={`task-${id}-priority`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                            }}
-                            onPointerDown={(e) => {
-                              e.stopPropagation();
-                            }}
                           >
                             <SelectValue />
                           </SelectTrigger>
@@ -297,13 +290,6 @@ export const TaskNode = memo(({ data, id }: NodeProps) => {
                           <SelectTrigger
                             className="w-full"
                             id={`task-${id}-assignedTo`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                            }}
-                            onPointerDown={(e) => {
-                              e.stopPropagation();
-                            }}
                           >
                             <SelectValue placeholder="Select user..." />
                           </SelectTrigger>
@@ -369,19 +355,9 @@ export const TaskNode = memo(({ data, id }: NodeProps) => {
           </p>
         )}
 
-        <div className="flex items-center gap-2">
+        <div className="nodrag nopan flex items-center gap-2">
           <Select onValueChange={handleStatusChange} value={status}>
-            <SelectTrigger
-              className="h-6 w-auto text-xs"
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-              }}
-              onPointerDown={(e) => {
-                e.stopPropagation();
-              }}
-              size="sm"
-            >
+            <SelectTrigger className="h-6 w-auto text-xs" size="sm">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
