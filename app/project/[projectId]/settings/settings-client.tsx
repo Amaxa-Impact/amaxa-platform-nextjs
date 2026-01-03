@@ -1,5 +1,5 @@
 "use client";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation } from "convex/react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useDashboardContext } from "@/components/dashboard/context";
@@ -17,10 +17,9 @@ import type { Id } from "@/convex/_generated/dataModel";
 
 export default function SettingsPageClient() {
   const { projectId } = useParams<{ projectId: Id<"projects"> }>();
-  const { userRole } = useDashboardContext();
+  const { project, userRole } = useDashboardContext();
   const isCoach = userRole === "coach";
 
-  const project = useQuery(api.projects.get, { projectId });
   const updateProject = useMutation(api.projects.update);
 
   const [name, setName] = useState("");
@@ -28,7 +27,7 @@ export default function SettingsPageClient() {
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (project) {
+    if (project.name || project.description) {
       setName(project.name);
       setDescription(project.description);
     }

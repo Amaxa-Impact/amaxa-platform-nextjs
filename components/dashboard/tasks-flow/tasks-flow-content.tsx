@@ -30,7 +30,7 @@ import { getStableUserId, getUserColor } from "./utils";
 
 export function TasksFlowContent({ allUsers }: { allUsers: User }) {
   const { projectId } = useParams<{ projectId: Id<"projects"> }>();
-  const { userRole } = useDashboardContext();
+  const { project, userRole } = useDashboardContext();
   const { isAuthenticated } = useConvexAuth();
   const { user } = useAuth();
 
@@ -44,8 +44,6 @@ export function TasksFlowContent({ allUsers }: { allUsers: User }) {
       y: number;
     };
   } | null>(null);
-
-  const project = useQuery(api.projects.get, { projectId });
   const convexNodes = useQuery(api.tasks.listForProject, { projectId });
   const convexEdges = useQuery(api.edges.listForProject, { projectId });
   const projectMembers = useQuery(api.userToProjects.listUsersForProject, {
@@ -336,7 +334,7 @@ export function TasksFlowContent({ allUsers }: { allUsers: User }) {
       <TasksHeader
         onAddTask={() => addNewTask()}
         othersPresence={othersPresence || []}
-        projectName={project?.name ?? "Project"}
+        projectName={project.name || "Project"}
         userRole={userRole}
       />
 

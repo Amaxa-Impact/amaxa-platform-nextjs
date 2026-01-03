@@ -14,6 +14,7 @@ import type { Id } from "@/convex/_generated/dataModel";
 
 interface Project {
   name: string;
+  description: string;
   id: Id<"projects">;
 }
 
@@ -25,6 +26,7 @@ export const DashboardContext = createContext<{
 }>({
   project: {
     name: "",
+    description: "",
     //@ts-expect-error - This is a workaround to fix the linting error.
     id: "",
   },
@@ -48,8 +50,12 @@ export const DashboardProvider = ({
   const contextValue = useMemo(
     () => ({
       project: project
-        ? { name: project.name, id: project._id }
-        : { name: "", id: "" as Id<"projects"> },
+        ? {
+            name: project.name,
+            description: project.description,
+            id: project._id,
+          }
+        : { name: "", description: "", id: "" as Id<"projects"> },
       userRole: (userRole ?? null) as UserRole,
     }),
     [project, userRole]
