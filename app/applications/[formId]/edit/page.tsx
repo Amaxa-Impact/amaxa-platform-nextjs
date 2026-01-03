@@ -1,33 +1,46 @@
-"use client";
-import { useQuery } from "convex/react";
-import { useParams } from "next/navigation";
-import { useApplicationForm } from "@/components/application/context";
-import { FormBuilder, FormHeader } from "@/components/form-builder";
+import { withAuth } from "@workos-inc/authkit-nextjs";
+import { fetchQuery } from "convex/nextjs";
+import type { Metadata } from "next";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import FormEditorClient from "./form-editor-client";
 
-export default function FormEditorClient() {
-  const { formId } = useParams<{ formId: Id<"applicationForms"> }>();
-  const fields = useQuery(api.applicationFormFields.listByFormId, { formId });
-  const form = useApplicationForm();
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{
+    formId: Id<"applicationForms">;
+  }>;
+}): Promise<Metadata> {
+  const { formId } = await params;
+  const { accessToken } = await withAuth();
 
-  if (!form) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <p className="text-muted-foreground">Form not found</p>
-      </div>
+  try {
+    const form = await fetchQuery(
+      api.applicationForms.get,
+      { formId },
+      { token: accessToken }
     );
+
+    if (!form) {
+      return {
+        title: "Edit Form",
+        description: "Edit application form fields and settings",
+      };
+    }
+
+    return {
+      title: `Edit ${form.title}`,
+      description: `Edit fields and settings for ${form.title}`,
+    };
+  } catch {
+    return {
+      title: "Edit Form",
+      description: "Edit application form fields and settings",
+    };
   }
+}
 
-  return (
-    <div className="flex h-screen flex-col">
-      <main className="flex-1 overflow-auto bg-background">
-        <div className="mx-auto max-w-3xl space-y-4 px-4 py-6">
-          <FormHeader form={form} formId={formId} />
-
-          <FormBuilder fields={fields} formId={formId} />
-        </div>
-      </main>
-    </div>
-  );
+export default function EditPage() {
+  return <FormEditorClient />;
 }

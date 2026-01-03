@@ -1,126 +1,46 @@
-"use client";
-import { useMutation, useQuery } from "convex/react";
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import { useDashboardContext } from "@/components/dashboard/context";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { withAuth } from "@workos-inc/authkit-nextjs";
+import { fetchQuery } from "convex/nextjs";
+import type { Metadata } from "next";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import SettingsPageClient from "./settings-client";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{
+    projectId: Id<"projects">;
+  }>;
+}): Promise<Metadata> {
+  const { projectId } = await params;
+  const { accessToken } = await withAuth();
+
+  try {
+    const project = await fetchQuery(
+      api.projects.get,
+      { projectId },
+      { token: accessToken }
+    );
+
+    if (!project) {
+      return {
+        title: "Project Settings",
+        description: "Manage project settings and configuration",
+      };
+    }
+
+    return {
+      title: `Settings - ${project.name}`,
+      description: `Manage settings for ${project.name} project`,
+    };
+  } catch {
+    return {
+      title: "Project Settings",
+      description: "Manage project settings and configuration",
+    };
+  }
+}
 
 export default function SettingsPage() {
-  const { projectId } = useParams<{ projectId: Id<"projects"> }>();
-  const { userRole } = useDashboardContext();
-  const isCoach = userRole === "coach";
-
-  const project = useQuery(api.projects.get, { projectId });
-  const updateProject = useMutation(api.projects.update);
-
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
-
-  useEffect(() => {
-    if (project) {
-      setName(project.name);
-      setDescription(project.description);
-    }
-  }, [project]);
-
-  const handleSave = async () => {
-    if (!isCoach) {
-      alert("Only coaches can edit project settings");
-      return;
-    }
-
-    setIsSaving(true);
-    try {
-      await updateProject({
-        projectId,
-        name: name.trim(),
-        description: description.trim(),
-      });
-      alert("Project settings saved successfully!");
-    } catch (error) {
-      alert(
-        `Failed to save: ${error instanceof Error ? error.message : "Unknown error"}`
-      );
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  if (!isCoach) {
-    return (
-      <div className="container mx-auto p-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Access Denied</CardTitle>
-            <CardDescription>
-              Only coaches can access project settings.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
-    );
-  }
-
-  return (
-    <div className="container mx-auto p-6">
-      <div className="mb-6">
-        <h1 className="mb-2 font-bold text-3xl">Project Settings</h1>
-        <p className="text-muted-foreground">
-          Manage project name and description. Only coaches can edit these
-          settings.
-        </p>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Project Information</CardTitle>
-          <CardDescription>
-            Update the project name and description
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <label className="mb-2 block font-medium text-sm" htmlFor="name">
-              Project Name
-            </label>
-            <Input
-              id="name"
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Enter project name"
-              value={name}
-            />
-          </div>
-          <div>
-            <label
-              className="mb-2 block font-medium text-sm"
-              htmlFor="description"
-            >
-              Description
-            </label>
-            <textarea
-              className="min-h-[100px] w-full rounded-md border px-3 py-2"
-              id="description"
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Enter project description"
-              value={description}
-            />
-          </div>
-          <Button disabled={isSaving} onClick={handleSave}>
-            {isSaving ? "Saving..." : "Save Changes"}
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
-  );
+  return <SettingsPageClient />;
 }

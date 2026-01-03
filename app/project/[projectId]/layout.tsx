@@ -1,8 +1,48 @@
+import { withAuth } from "@workos-inc/authkit-nextjs";
+import { fetchQuery } from "convex/nextjs";
+import type { Metadata } from "next";
 import { BreadcrumbHeader } from "@/components/dashboard/breadcrumb-header";
 import { DashboardProvider } from "@/components/dashboard/context";
 import { AppSidebar } from "@/components/dashboard/sidebar/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{
+    projectId: Id<"projects">;
+  }>;
+}): Promise<Metadata> {
+  const { projectId } = await params;
+  const { accessToken } = await withAuth();
+
+  try {
+    const project = await fetchQuery(
+      api.projects.get,
+      { projectId },
+      { token: accessToken }
+    );
+
+    if (!project) {
+      return {
+        title: "Project",
+        description: "View and manage project details",
+      };
+    }
+
+    return {
+      title: project.name,
+      description: project.description || `Project: ${project.name}`,
+    };
+  } catch {
+    return {
+      title: "Project",
+      description: "View and manage project details",
+    };
+  }
+}
 
 export default async function RouteComponent({
   params,

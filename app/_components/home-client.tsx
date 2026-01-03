@@ -107,8 +107,8 @@ export function HomeClient({
 
   if (projects.length === 0) {
     return (
-      <div className="flex min-h-[calc(100vh-3.5rem)] w-full items-center justify-center">
-        <Card className="max-w-md">
+      <div className="flex min-h-[calc(100vh-3.5rem)] w-full items-center justify-center px-6">
+        <Card className="w-full max-w-lg">
           <CardHeader>
             <CardTitle>No Projects Yet</CardTitle>
             <CardDescription>

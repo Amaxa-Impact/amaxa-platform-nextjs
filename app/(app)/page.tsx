@@ -1,8 +1,14 @@
 import { withAuth } from "@workos-inc/authkit-nextjs";
 import { fetchQuery, preloadQuery } from "convex/nextjs";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { api } from "@/convex/_generated/api";
 import { HomeClient } from "../_components/home-client";
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+  description: "View and manage your projects on the Amaxa Platform",
+};
 
 export default async function Home() {
   const { accessToken } = await withAuth();

@@ -1,68 +1,46 @@
-/* eslint-disable react/jsx-no-undef */
-/** biome-ignore-all lint/correctness/noChildrenProp: This is a workaround to fix the linting error. */
-"use client";
-import { useForm } from "@tanstack/react-form";
-import { useMutation } from "convex/react";
-import { z } from "zod";
-import { useApplicationForm } from "@/components/application/context";
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { withAuth } from "@workos-inc/authkit-nextjs";
+import { fetchQuery } from "convex/nextjs";
+import type { Metadata } from "next";
 import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import SettingsPageClient from "./settings-client";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{
+    formId: Id<"applicationForms">;
+  }>;
+}): Promise<Metadata> {
+  const { formId } = await params;
+  const { accessToken } = await withAuth();
+
+  try {
+    const form = await fetchQuery(
+      api.applicationForms.get,
+      { formId },
+      { token: accessToken }
+    );
+
+    if (!form) {
+      return {
+        title: "Form Settings",
+        description: "Manage application form settings",
+      };
+    }
+
+    return {
+      title: `Settings - ${form.title}`,
+      description: `Manage settings for ${form.title} application form`,
+    };
+  } catch {
+    return {
+      title: "Form Settings",
+      description: "Manage application form settings",
+    };
+  }
+}
 
 export default function SettingsPage() {
-  const applicationFormData = useApplicationForm();
-  const mutation = useMutation(api.applicationForms.update);
-  const form = useForm({
-    defaultValues: {
-      slug: applicationFormData.slug,
-      isPublished: applicationFormData.isPublished,
-    },
-    validators: {
-      onChange: z.object({
-        slug: z.string().min(1),
-        isPublished: z.boolean(),
-      }),
-    },
-    onSubmit: async ({ value }) => {
-      try {
-        await mutation({
-          formId: applicationFormData._id,
-          slug: value.slug,
-          isPublished: value.isPublished,
-        });
-      } catch (error) {
-        console.error(error);
-      }
-    },
-  });
-
-  return (
-    <div className="flex h-screen flex-col">
-      <FieldGroup>
-        <form.Field
-          children={(field) => (
-            <Field>
-              <FieldLabel htmlFor={field.name}>URL Slug</FieldLabel>
-              <Input
-                id={field.name}
-                name={field.name}
-                onBlur={field.handleBlur}
-                onChange={(e) => field.handleChange(e.target.value)}
-                value={field.state.value}
-              />
-              <FieldDescription>
-                The URL slug for the application form.
-              </FieldDescription>
-            </Field>
-          )}
-          name="slug"
-        />
-      </FieldGroup>
-    </div>
-  );
+  return <SettingsPageClient />;
 }
