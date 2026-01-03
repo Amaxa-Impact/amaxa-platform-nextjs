@@ -1,7 +1,19 @@
-'use client';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { IconAlignLeft, IconCheck, IconCircleDot, IconHash, IconTextSize } from '@tabler/icons-react';
-import { FIELD_TYPES, fieldTypeLabels, type FieldType } from './types';
+"use client";
+import {
+  IconAlignLeft,
+  IconCheck,
+  IconCircleDot,
+  IconHash,
+  IconTextSize,
+} from "@tabler/icons-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { FIELD_TYPES, type FieldType, fieldTypeLabels } from "./types";
 
 const fieldTypeIcons: Record<FieldType, React.ReactNode> = {
   text: <IconTextSize className="h-4 w-4" />,
@@ -17,16 +29,20 @@ interface FormFieldTypeSelectorProps {
   disabled?: boolean;
 }
 
-export function FormFieldTypeSelector({ value, onChange, disabled }: FormFieldTypeSelectorProps) {
+export function FormFieldTypeSelector({
+  value,
+  onChange,
+  disabled,
+}: FormFieldTypeSelectorProps) {
   return (
     <Select
-      value={value}
+      disabled={disabled}
       onValueChange={(newValue) => {
         if (newValue) {
           onChange(newValue as FieldType);
         }
       }}
-      disabled={disabled}
+      value={value}
     >
       <SelectTrigger className="w-[160px]">
         <SelectValue>

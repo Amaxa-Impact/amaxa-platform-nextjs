@@ -1,20 +1,20 @@
 /* eslint-disable react/no-children-prop */
-'use client';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useForm } from '@tanstack/react-form';
-import { api } from '@/convex/_generated/api';
-import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { Field, FieldError, FieldLabel } from '@/components/ui/field';
-import { IconCopy, IconGripVertical, IconTrash } from '@tabler/icons-react';
-import { FormFieldTypeSelector } from './form-field-type-selector';
-import { FormQuestionOptions } from './form-question-options';
-import { useFieldTypeInference } from './use-field-type-inference';
-import type { FormField, QuestionFormValues } from './types';
-import { useMutation } from 'convex/react';
+"use client";
+import { IconCopy, IconGripVertical, IconTrash } from "@tabler/icons-react";
+import { useForm } from "@tanstack/react-form";
+import { useMutation } from "convex/react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { api } from "@/convex/_generated/api";
+import { cn } from "@/lib/utils";
+import { FormFieldTypeSelector } from "./form-field-type-selector";
+import { FormQuestionOptions } from "./form-question-options";
+import type { FormField, QuestionFormValues } from "./types";
+import { useFieldTypeInference } from "./use-field-type-inference";
 
 interface FormQuestionCardProps {
   field: FormField;
@@ -43,7 +43,7 @@ export function FormQuestionCard({
   const form = useForm({
     defaultValues: {
       label: field.label,
-      description: field.description ?? '',
+      description: field.description ?? "",
       type: field.type,
       required: field.required,
       options: field.options ?? [],
@@ -63,17 +63,20 @@ export function FormQuestionCard({
           description: values.description || undefined,
           type: values.type,
           required: values.required,
-          options: values.type === 'select' || values.type === 'multiselect' ? values.options : undefined,
-          min: values.type === 'number' ? values.min : undefined,
-          max: values.type === 'number' ? values.max : undefined,
+          options:
+            values.type === "select" || values.type === "multiselect"
+              ? values.options
+              : undefined,
+          min: values.type === "number" ? values.min : undefined,
+          max: values.type === "number" ? values.max : undefined,
         });
-      } catch (error) {
-        toast.error('Failed to save changes');
+      } catch (_error) {
+        toast.error("Failed to save changes");
       } finally {
         setIsSaving(false);
       }
     },
-    [field._id, updateField],
+    [field._id, updateField]
   );
 
   const debouncedSave = useCallback(
@@ -85,7 +88,7 @@ export function FormQuestionCard({
         saveField(values);
       }, 500);
     },
-    [saveField],
+    [saveField]
   );
 
   // Cleanup timeout on unmount
@@ -99,11 +102,11 @@ export function FormQuestionCard({
 
   // Handle label blur - infer field type
   const handleLabelBlur = useCallback(async () => {
-    const label = form.getFieldValue('label');
+    const label = form.getFieldValue("label");
     if (label && label.length > 3) {
       const result = await inferFieldType(label);
       if (result) {
-        form.setFieldValue('type', result.fieldType);
+        form.setFieldValue("type", result.fieldType);
         // Auto-save after type inference
         debouncedSave({
           ...form.state.values,
@@ -120,42 +123,56 @@ export function FormQuestionCard({
     }
   }, [isActive]);
 
-  const showOptions = form.state.values.type === 'select' || form.state.values.type === 'multiselect';
+  const showOptions =
+    form.state.values.type === "select" ||
+    form.state.values.type === "multiselect";
 
-  const showNumberConfig = form.state.values.type === 'number';
+  const showNumberConfig = form.state.values.type === "number";
 
   return (
     <div
       className={cn(
-        'group relative rounded-lg border bg-card transition-all',
-        isActive ? 'border-primary ring-1 ring-primary/20' : 'border-border hover:border-muted-foreground/30',
+        "group relative rounded-lg border bg-card transition-all",
+        isActive
+          ? "border-primary ring-1 ring-primary/20"
+          : "border-border hover:border-muted-foreground/30"
       )}
       onClick={onActivate}
     >
       {/* Drag Handle */}
       <div
         {...dragHandleProps}
-        className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 cursor-grab opacity-0 group-hover:opacity-100 transition-opacity"
+        className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 cursor-grab opacity-0 transition-opacity group-hover:opacity-100"
       >
         <IconGripVertical className="h-5 w-5 text-muted-foreground" />
       </div>
 
       {/* Saving Indicator */}
-      {isSaving && <div className="absolute top-2 right-2 text-xs text-muted-foreground">Saving...</div>}
+      {isSaving && (
+        <div className="absolute top-2 right-2 text-muted-foreground text-xs">
+          Saving...
+        </div>
+      )}
 
-      <div className="p-4 space-y-4">
+      <div className="space-y-4 p-4">
         {/* Question Label and Type Selector Row */}
         <div className="flex gap-4">
           <div className="flex-1">
             <form.Field
-              name="label"
               children={(fieldApi) => (
                 <Field>
                   <Input
-                    ref={labelInputRef}
+                    className={cn(
+                      "rounded-none border-0 border-b px-0 font-medium text-base focus-visible:border-primary focus-visible:ring-0",
+                      isActive ? "border-b-2" : ""
+                    )}
+                    disabled={isInferring}
                     id={`field-${field._id}-label`}
                     name={fieldApi.name}
-                    value={fieldApi.state.value}
+                    onBlur={() => {
+                      fieldApi.handleBlur();
+                      handleLabelBlur();
+                    }}
                     onChange={(e) => {
                       fieldApi.handleChange(e.target.value);
                       debouncedSave({
@@ -163,29 +180,23 @@ export function FormQuestionCard({
                         label: e.target.value,
                       });
                     }}
-                    onBlur={() => {
-                      fieldApi.handleBlur();
-                      handleLabelBlur();
-                    }}
                     placeholder="Question"
-                    className={cn(
-                      'border-0 border-b rounded-none focus-visible:ring-0 focus-visible:border-primary px-0 text-base font-medium',
-                      isActive ? 'border-b-2' : '',
-                    )}
-                    disabled={isInferring}
+                    ref={labelInputRef}
+                    value={fieldApi.state.value}
                   />
-                  {fieldApi.state.meta.isTouched && !fieldApi.state.meta.isValid && (
-                    <FieldError errors={fieldApi.state.meta.errors} />
-                  )}
+                  {fieldApi.state.meta.isTouched &&
+                    !fieldApi.state.meta.isValid && (
+                      <FieldError errors={fieldApi.state.meta.errors} />
+                    )}
                 </Field>
               )}
+              name="label"
             />
           </div>
           <form.Field
-            name="type"
             children={(fieldApi) => (
               <FormFieldTypeSelector
-                value={fieldApi.state.value}
+                disabled={isInferring}
                 onChange={(value) => {
                   fieldApi.handleChange(value);
                   debouncedSave({
@@ -193,22 +204,23 @@ export function FormQuestionCard({
                     type: value,
                   });
                 }}
-                disabled={isInferring}
+                value={fieldApi.state.value}
               />
             )}
+            name="type"
           />
         </div>
 
         {/* Description (shown when active) */}
         {isActive && (
           <form.Field
-            name="description"
             children={(fieldApi) => (
               <Field>
                 <Input
+                  className="text-muted-foreground text-sm"
                   id={`field-${field._id}-description`}
                   name={fieldApi.name}
-                  value={fieldApi.state.value ?? ''}
+                  onBlur={fieldApi.handleBlur}
                   onChange={(e) => {
                     fieldApi.handleChange(e.target.value);
                     debouncedSave({
@@ -216,23 +228,20 @@ export function FormQuestionCard({
                       description: e.target.value,
                     });
                   }}
-                  onBlur={fieldApi.handleBlur}
                   placeholder="Description (optional)"
-                  className="text-sm text-muted-foreground"
+                  value={fieldApi.state.value ?? ""}
                 />
               </Field>
             )}
+            name="description"
           />
         )}
 
         {/* Options for select/multiselect */}
         {showOptions && (
           <form.Field
-            name="options"
-            mode="array"
             children={(fieldApi) => (
               <FormQuestionOptions
-                options={fieldApi.state.value ?? []}
                 onOptionsChange={(options) => {
                   fieldApi.setValue(options);
                   debouncedSave({
@@ -240,9 +249,12 @@ export function FormQuestionCard({
                     options,
                   });
                 }}
-                type={form.state.values.type as 'select' | 'multiselect'}
+                options={fieldApi.state.value ?? []}
+                type={form.state.values.type as "select" | "multiselect"}
               />
             )}
+            mode="array"
+            name="options"
           />
         )}
 
@@ -250,16 +262,17 @@ export function FormQuestionCard({
         {showNumberConfig && isActive && (
           <div className="flex gap-4">
             <form.Field
-              name="min"
               children={(fieldApi) => (
                 <Field className="flex-1">
-                  <FieldLabel htmlFor={`field-${field._id}-min`}>Minimum</FieldLabel>
+                  <FieldLabel htmlFor={`field-${field._id}-min`}>
+                    Minimum
+                  </FieldLabel>
                   <Input
                     id={`field-${field._id}-min`}
-                    type="number"
-                    value={fieldApi.state.value ?? ''}
                     onChange={(e) => {
-                      const value = e.target.value ? parseFloat(e.target.value) : undefined;
+                      const value = e.target.value
+                        ? Number.parseFloat(e.target.value)
+                        : undefined;
                       fieldApi.handleChange(value);
                       debouncedSave({
                         ...form.state.values,
@@ -267,21 +280,25 @@ export function FormQuestionCard({
                       });
                     }}
                     placeholder="No minimum"
+                    type="number"
+                    value={fieldApi.state.value ?? ""}
                   />
                 </Field>
               )}
+              name="min"
             />
             <form.Field
-              name="max"
               children={(fieldApi) => (
                 <Field className="flex-1">
-                  <FieldLabel htmlFor={`field-${field._id}-max`}>Maximum</FieldLabel>
+                  <FieldLabel htmlFor={`field-${field._id}-max`}>
+                    Maximum
+                  </FieldLabel>
                   <Input
                     id={`field-${field._id}-max`}
-                    type="number"
-                    value={fieldApi.state.value ?? ''}
                     onChange={(e) => {
-                      const value = e.target.value ? parseFloat(e.target.value) : undefined;
+                      const value = e.target.value
+                        ? Number.parseFloat(e.target.value)
+                        : undefined;
                       fieldApi.handleChange(value);
                       debouncedSave({
                         ...form.state.values,
@@ -289,25 +306,30 @@ export function FormQuestionCard({
                       });
                     }}
                     placeholder="No maximum"
+                    type="number"
+                    value={fieldApi.state.value ?? ""}
                   />
                 </Field>
               )}
+              name="max"
             />
           </div>
         )}
 
         {/* Footer: Required toggle and actions */}
-        <div className="flex items-center justify-between pt-2 border-t">
+        <div className="flex items-center justify-between border-t pt-2">
           <form.Field
-            name="required"
             children={(fieldApi) => (
               <Field orientation="horizontal">
-                <FieldLabel htmlFor={`field-${field._id}-required`} className="text-sm font-normal">
+                <FieldLabel
+                  className="font-normal text-sm"
+                  htmlFor={`field-${field._id}-required`}
+                >
                   Required
                 </FieldLabel>
                 <Switch
-                  id={`field-${field._id}-required`}
                   checked={fieldApi.state.value}
+                  id={`field-${field._id}-required`}
                   onCheckedChange={(checked) => {
                     fieldApi.handleChange(checked);
                     debouncedSave({
@@ -318,31 +340,32 @@ export function FormQuestionCard({
                 />
               </Field>
             )}
+            name="required"
           />
 
           <div className="flex gap-1">
             <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
               onClick={(e) => {
                 e.stopPropagation();
                 onDuplicate();
               }}
+              size="icon-sm"
               title="Duplicate"
+              type="button"
+              variant="ghost"
             >
               <IconCopy className="h-4 w-4" />
             </Button>
             <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
+              className="text-destructive hover:text-destructive"
               onClick={(e) => {
                 e.stopPropagation();
                 onDelete();
               }}
+              size="icon-sm"
               title="Delete"
-              className="text-destructive hover:text-destructive"
+              type="button"
+              variant="ghost"
             >
               <IconTrash className="h-4 w-4" />
             </Button>

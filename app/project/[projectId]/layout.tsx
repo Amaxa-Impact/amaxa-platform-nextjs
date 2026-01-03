@@ -1,15 +1,15 @@
-import { Id } from '@/convex/_generated/dataModel';
-import { DashboardProvider } from '@/components/dashboard/context';
-import { SidebarProvider } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/dashboard/sidebar/app-sidebar';
-import { BreadcrumbHeader } from '@/components/dashboard/breadcrumb-header';
+import { BreadcrumbHeader } from "@/components/dashboard/breadcrumb-header";
+import { DashboardProvider } from "@/components/dashboard/context";
+import { AppSidebar } from "@/components/dashboard/sidebar/app-sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import type { Id } from "@/convex/_generated/dataModel";
 
 export default async function RouteComponent({
   params,
   children,
 }: {
   params: Promise<{
-    projectId: Id<'projects'>;
+    projectId: Id<"projects">;
   }>;
   children: React.ReactNode;
 }) {
@@ -19,7 +19,7 @@ export default async function RouteComponent({
     <DashboardProvider projectId={projectId}>
       <SidebarProvider>
         <AppSidebar projectId={projectId} />
-        <main className="flex-1 flex flex-col">
+        <main className="flex flex-1 flex-col">
           <BreadcrumbHeader />
           <div className="flex-1">{children}</div>
         </main>

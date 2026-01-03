@@ -1,71 +1,70 @@
-"use client"
-import { useMutation, useQuery } from 'convex/react'
-import { api } from '@/convex/_generated/api'
-import { Button } from '@/components/ui/button'
+"use client";
+import { useMutation, useQuery } from "convex/react";
+import { useParams } from "next/navigation";
+import { useState } from "react";
+import { useDashboardContext } from "@/components/dashboard/context";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
-import { useDashboardContext } from '@/components/dashboard/context'
-import { useState } from 'react'
-import type { Id } from '@/convex/_generated/dataModel'
-import { AddUserForm } from '../_components/add-user-form'
-import { useParams } from 'next/navigation'
-import type { User } from '@/lib/workos'
-  
-export function UsersPageContent({
-  allUsers,
-}: {
-  allUsers: User
-}) {
-  const { projectId } = useParams<{ projectId: Id<'projects'> }>()
-  const { userRole } = useDashboardContext()
-  const isCoach = userRole === 'coach'
+} from "@/components/ui/card";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import type { User } from "@/lib/workos";
+import { AddUserForm } from "../_components/add-user-form";
 
-  const existingUsers = useQuery(
-    api.userToProject.listUsersForProject, { projectId },
-  )
+export function UsersPageContent({ allUsers }: { allUsers: User }) {
+  const { projectId } = useParams<{ projectId: Id<"projects"> }>();
+  const { userRole } = useDashboardContext();
+  const isCoach = userRole === "coach";
 
-  const removeUser = useMutation(api.userToProject.remove)
-  const updateRole = useMutation(api.userToProject.updateRole)
+  const existingUsers = useQuery(api.userToProject.listUsersForProject, {
+    projectId,
+  });
 
-  const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false)
+  const removeUser = useMutation(api.userToProject.remove);
+  const updateRole = useMutation(api.userToProject.updateRole);
 
-  const existingUserIds = existingUsers?.map((user) => user.userId)
+  const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
+
+  const existingUserIds = existingUsers?.map((user) => user.userId);
 
   const handleRemoveUser = async (userId: string) => {
-    if (!confirm('Are you sure you want to remove this user from the project?'))
-      return
+    if (
+      !confirm("Are you sure you want to remove this user from the project?")
+    ) {
+      return;
+    }
     try {
-      await removeUser({ userId, projectId })
+      await removeUser({ userId, projectId });
     } catch (error) {
       alert(
-        `Failed to remove user: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      )
+        `Failed to remove user: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
     }
-  }
+  };
 
-  const handleUpdateRole = async (userId: string, role: 'coach' | 'member') => {
+  const handleUpdateRole = async (userId: string, role: "coach" | "member") => {
     try {
-      await updateRole({ userId, projectId, role })
+      await updateRole({ userId, projectId, role });
     } catch (error) {
       alert(
-        `Failed to update role: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      )
+        `Failed to update role: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
     }
-  }
+  };
 
   return (
     <div className="container mx-auto p-6">
       <div className="flex items-center justify-between">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2">Project Users</h1>
+          <h1 className="mb-2 font-bold text-3xl">Project Users</h1>
           <p className="text-muted-foreground">
-            Manage users and their roles in this project. Your role:{' '}
-            <strong>{userRole || 'None'}</strong>
+            Manage users and their roles in this project. Your role:{" "}
+            <strong>{userRole || "None"}</strong>
           </p>
         </div>
 
@@ -78,10 +77,10 @@ export function UsersPageContent({
             </div>
             <AddUserForm
               allUsers={allUsers}
-              projectId={projectId}
-              open={isAddUserDialogOpen}
-              onOpenChange={setIsAddUserDialogOpen}
               existingUserIds={existingUserIds}
+              onOpenChange={setIsAddUserDialogOpen}
+              open={isAddUserDialogOpen}
+              projectId={projectId}
             />
           </>
         )}
@@ -102,39 +101,38 @@ export function UsersPageContent({
             <div className="space-y-2">
               {existingUsers?.map((user) => (
                 <div
+                  className="flex items-center justify-between rounded-lg border p-4"
                   key={user._id}
-                  className="flex items-center justify-between p-4 border rounded-lg"
                 >
                   <div>
                     <p className="font-medium">
                       {
-                        allUsers.find(
-                          (u) => u.id === user.userId.split('|')[1],
-                        )?.email
+                        allUsers.find((u) => u.id === user.userId.split("|")[1])
+                          ?.email
                       }
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       Role: <span className="capitalize">{user.role}</span>
                     </p>
                   </div>
                   {isCoach && (
                     <div className="flex gap-2">
                       <select
-                        value={user.role}
+                        className="rounded-md border px-3 py-2"
                         onChange={(e) =>
                           handleUpdateRole(
                             user.userId,
-                            e.target.value as 'coach' | 'member',
+                            e.target.value as "coach" | "member"
                           )
                         }
-                        className="px-3 py-2 border rounded-md"
+                        value={user.role}
                       >
                         <option value="member">Member</option>
                         <option value="coach">Coach</option>
                       </select>
                       <Button
-                        variant="destructive"
                         onClick={() => handleRemoveUser(user.userId)}
+                        variant="destructive"
                       >
                         Remove
                       </Button>
@@ -147,5 +145,5 @@ export function UsersPageContent({
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

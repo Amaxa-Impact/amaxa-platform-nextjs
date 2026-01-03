@@ -1,15 +1,15 @@
-import { ApplicationFormProvider } from '@/components/application/context';
-import { ApplicationNavbar } from '@/components/application/navbar';
-import type { Id } from '@/convex/_generated/dataModel';
+import { ApplicationFormProvider } from "@/components/application/context";
+import { ApplicationNavbar } from "@/components/application/navbar";
+import type { Id } from "@/convex/_generated/dataModel";
 
 export default async function RouteComponent({
   params,
   children,
 }: {
   params: Promise<{
-    formId: Id<'applicationForms'>;
+    formId: Id<"applicationForms">;
   }>;
-  children: React.ReactNode;  
+  children: React.ReactNode;
 }) {
   const formId = (await params).formId;
   return (

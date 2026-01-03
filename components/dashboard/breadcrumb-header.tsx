@@ -1,4 +1,6 @@
-'use client';
+"use client";
+import Link from "next/link";
+import { useParams, usePathname } from "next/navigation";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -6,17 +8,15 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
-import { SidebarTrigger } from '@/components/ui/sidebar';
-import { useDashboardContext } from './context';
-import { useParams, usePathname } from 'next/navigation';
-import Link from 'next/link';
+} from "@/components/ui/breadcrumb";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { useDashboardContext } from "./context";
 
 const PAGE_NAMES: Record<string, string> = {
-  '': 'Dashboard',
-  'tasks': 'Tasks',
-  'users': 'Users',
-  'settings': 'Settings',
+  "": "Dashboard",
+  tasks: "Tasks",
+  users: "Users",
+  settings: "Settings",
 };
 
 export function BreadcrumbHeader() {
@@ -24,15 +24,15 @@ export function BreadcrumbHeader() {
   const pathname = usePathname();
   const { projectId } = useParams();
 
-  const pathParts = pathname.split('/').filter(Boolean);
+  const pathParts = pathname.split("/").filter(Boolean);
   const projectIdFromPath = pathParts[1];
   const currentPageFromPath = pathParts[2];
 
-  const currentPage = currentPageFromPath || '';
+  const currentPage = currentPageFromPath || "";
   const pageName = PAGE_NAMES[currentPage] || currentPage;
 
   return (
-    <header className="sticky top-0 z-10 bg-background border-b border-border">
+    <header className="sticky top-0 z-10 border-border border-b bg-background">
       <div className="flex items-center gap-2 px-4 py-3">
         <SidebarTrigger className="-ml-1" />
         <div className="h-5 w-px bg-border" />
@@ -46,7 +46,9 @@ export function BreadcrumbHeader() {
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbLink>
-                <Link href={`/project/${projectId || projectIdFromPath}`}>{project.name || 'No Project Found'}</Link>
+                <Link href={`/project/${projectId || projectIdFromPath}`}>
+                  {project.name || "No Project Found"}
+                </Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />

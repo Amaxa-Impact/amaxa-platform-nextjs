@@ -1,34 +1,34 @@
-import { google } from '@ai-sdk/google'
-import { generateText, Output } from 'ai'
-import { NextResponse } from 'next/server'
-import { z } from 'zod'
+import { google } from "@ai-sdk/google";
+import { generateText, Output } from "ai";
+import { NextResponse } from "next/server";
+import { z } from "zod";
 
 const fieldTypeSchema = z.enum([
-  'text',
-  'textarea',
-  'number',
-  'select',
-  'multiselect',
-])
+  "text",
+  "textarea",
+  "number",
+  "select",
+  "multiselect",
+]);
 
 export async function POST(request: Request) {
   try {
-    const { input } = await request.json()
+    const { input } = await request.json();
 
-    if (!input || typeof input !== 'string') {
-      return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
+    if (!input || typeof input !== "string") {
+      return NextResponse.json({ error: "Invalid input" }, { status: 400 });
     }
 
     const { output } = await generateText({
-      model: google('gemini-2.0-flash-lite'),
+      model: google("gemini-2.0-flash-lite"),
       output: Output.object({
-        name: 'FieldTypePrediction',
-        description: 'Predicted field type for a form question',
+        name: "FieldTypePrediction",
+        description: "Predicted field type for a form question",
         schema: z.object({
           fieldType: fieldTypeSchema,
           reasoning: z
             .string()
-            .describe('Brief explanation for why this type was chosen'),
+            .describe("Brief explanation for why this type was chosen"),
         }),
       }),
       prompt: `You are a form builder assistant. Based on the question text below, determine the most appropriate field type.
@@ -47,20 +47,20 @@ Analyze the question and predict the most suitable field type. Consider:
 - Does it expect a number?
 - Does it imply choosing from options?
 - Does it allow multiple selections?`,
-    })
+    });
 
     return NextResponse.json({
       fieldType: output.fieldType,
       reasoning: output.reasoning,
-    })
+    });
   } catch (error) {
-    console.error('Field type prediction error:', error)
+    console.error("Field type prediction error:", error);
     return NextResponse.json(
       {
-        error: 'Failed to predict field type',
-        fieldType: 'text', // fallback
+        error: "Failed to predict field type",
+        fieldType: "text", // fallback
       },
-      { status: 500 },
-    )
+      { status: 500 }
+    );
   }
 }

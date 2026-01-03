@@ -1,18 +1,18 @@
-import { query, mutation } from './_generated/server';
-import { v } from 'convex/values';
-import { requireSiteAdmin } from './permissions';
+import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
+import { requireSiteAdmin } from "./permissions";
 
 const fieldTypeValidator = v.union(
-  v.literal('text'),
-  v.literal('textarea'),
-  v.literal('number'),
-  v.literal('select'),
-  v.literal('multiselect')
+  v.literal("text"),
+  v.literal("textarea"),
+  v.literal("number"),
+  v.literal("select"),
+  v.literal("multiselect")
 );
 
 export const create = mutation({
   args: {
-    formId: v.id('applicationForms'),
+    formId: v.id("applicationForms"),
     label: v.string(),
     description: v.optional(v.string()),
     type: fieldTypeValidator,
@@ -21,18 +21,18 @@ export const create = mutation({
     min: v.optional(v.number()),
     max: v.optional(v.number()),
   },
-  returns: v.id('applicationFormFields'),
+  returns: v.id("applicationFormFields"),
   handler: async (ctx, args) => {
     await requireSiteAdmin(ctx);
 
     const form = await ctx.db.get(args.formId);
     if (!form) {
-      throw new Error('Form not found');
+      throw new Error("Form not found");
     }
 
     const existingFields = await ctx.db
-      .query('applicationFormFields')
-      .withIndex('by_form', (q) => q.eq('formId', args.formId))
+      .query("applicationFormFields")
+      .withIndex("by_form", (q) => q.eq("formId", args.formId))
       .collect();
 
     const maxOrder = existingFields.reduce(
@@ -40,7 +40,7 @@ export const create = mutation({
       -1
     );
 
-    const fieldId = await ctx.db.insert('applicationFormFields', {
+    const fieldId = await ctx.db.insert("applicationFormFields", {
       formId: args.formId,
       label: args.label,
       description: args.description,
@@ -58,7 +58,7 @@ export const create = mutation({
 
 export const update = mutation({
   args: {
-    fieldId: v.id('applicationFormFields'),
+    fieldId: v.id("applicationFormFields"),
     label: v.optional(v.string()),
     description: v.optional(v.string()),
     type: v.optional(fieldTypeValidator),
@@ -73,7 +73,7 @@ export const update = mutation({
 
     const field = await ctx.db.get(args.fieldId);
     if (!field) {
-      throw new Error('Field not found');
+      throw new Error("Field not found");
     }
 
     const { fieldId, ...updates } = args;
@@ -84,8 +84,8 @@ export const update = mutation({
 
 export const reorder = mutation({
   args: {
-    formId: v.id('applicationForms'),
-    fieldIds: v.array(v.id('applicationFormFields')),
+    formId: v.id("applicationForms"),
+    fieldIds: v.array(v.id("applicationFormFields")),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
@@ -112,7 +112,7 @@ export const reorder = mutation({
 
 export const remove = mutation({
   args: {
-    fieldId: v.id('applicationFormFields'),
+    fieldId: v.id("applicationFormFields"),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
@@ -120,12 +120,12 @@ export const remove = mutation({
 
     const field = await ctx.db.get(args.fieldId);
     if (!field) {
-      throw new Error('Field not found');
+      throw new Error("Field not found");
     }
 
     const fieldResponses = await ctx.db
-      .query('applicationFieldResponses')
-      .filter((q) => q.eq(q.field('fieldId'), args.fieldId))
+      .query("applicationFieldResponses")
+      .filter((q) => q.eq(q.field("fieldId"), args.fieldId))
       .collect();
 
     for (const response of fieldResponses) {
@@ -140,13 +140,13 @@ export const remove = mutation({
 
 export const listByForm = query({
   args: {
-    formId: v.id('applicationForms'),
+    formId: v.id("applicationForms"),
   },
   returns: v.array(
     v.object({
-      _id: v.id('applicationFormFields'),
+      _id: v.id("applicationFormFields"),
       _creationTime: v.number(),
-      formId: v.id('applicationForms'),
+      formId: v.id("applicationForms"),
       label: v.string(),
       description: v.optional(v.string()),
       type: fieldTypeValidator,
@@ -160,7 +160,7 @@ export const listByForm = query({
   handler: async (ctx, args) => {
     const form = await ctx.db.get(args.formId);
     if (!form) {
-      throw new Error('Form not found');
+      throw new Error("Form not found");
     }
 
     if (!form.isPublished) {
@@ -168,11 +168,10 @@ export const listByForm = query({
     }
 
     const fields = await ctx.db
-      .query('applicationFormFields')
-      .withIndex('by_form', (q) => q.eq('formId', args.formId))
+      .query("applicationFormFields")
+      .withIndex("by_form", (q) => q.eq("formId", args.formId))
       .collect();
 
     return fields.sort((a, b) => a.order - b.order);
   },
 });
-

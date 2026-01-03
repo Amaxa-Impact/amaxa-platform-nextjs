@@ -5,9 +5,9 @@
  * on the frontend. It shows the data flow and structure expected.
  */
 
-import { mutation } from './_generated/server'
-import { v } from 'convex/values'
-import type { Id } from './_generated/dataModel'
+import { v } from "convex/values";
+import type { Id } from "./_generated/dataModel";
+import { mutation } from "./_generated/server";
 
 /**
  * Example: Sync React Flow state to Convex
@@ -17,7 +17,7 @@ import type { Id } from './_generated/dataModel'
  */
 export const syncReactFlowState = mutation({
   args: {
-    projectId: v.id('projects'),
+    projectId: v.id("projects"),
     nodes: v.array(
       v.object({
         id: v.optional(v.string()), // Will be generated if not provided
@@ -31,19 +31,19 @@ export const syncReactFlowState = mutation({
           description: v.optional(v.string()),
           status: v.optional(
             v.union(
-              v.literal('todo'),
-              v.literal('in_progress'),
-              v.literal('completed'),
-              v.literal('blocked'),
-            ),
+              v.literal("todo"),
+              v.literal("in_progress"),
+              v.literal("completed"),
+              v.literal("blocked")
+            )
           ),
           assignedTo: v.optional(v.string()),
           dueDate: v.optional(v.number()),
           priority: v.optional(
-            v.union(v.literal('low'), v.literal('medium'), v.literal('high')),
+            v.union(v.literal("low"), v.literal("medium"), v.literal("high"))
           ),
         }),
-      }),
+      })
     ),
     edges: v.array(
       v.object({
@@ -54,21 +54,21 @@ export const syncReactFlowState = mutation({
         targetHandle: v.optional(v.string()),
         label: v.optional(v.string()),
         animated: v.optional(v.boolean()),
-      }),
+      })
     ),
   },
   returns: v.object({
-    nodeIds: v.array(v.id('tasks')),
-    edgeIds: v.array(v.id('edges')),
+    nodeIds: v.array(v.id("tasks")),
+    edgeIds: v.array(v.id("edges")),
   }),
   handler: async (ctx, args) => {
     // Create all nodes first
-    const nodeIds: Id<'tasks'>[] = []
-    const oldToNewIdMap: Record<string, Id<'tasks'>> = {}
+    const nodeIds: Id<"tasks">[] = [];
+    const oldToNewIdMap: Record<string, Id<"tasks">> = {};
 
     for (const node of args.nodes) {
       // Create the task with core data
-      const taskId = await ctx.db.insert('tasks', {
+      const taskId = await ctx.db.insert("tasks", {
         projectId: args.projectId,
         label: node.data.label,
         description: node.data.description,
@@ -76,33 +76,33 @@ export const syncReactFlowState = mutation({
         assignedTo: node.data.assignedTo,
         dueDate: node.data.dueDate,
         priority: node.data.priority,
-      })
+      });
 
       // Create the task node with visual properties
-      await ctx.db.insert('taskNodes', {
+      await ctx.db.insert("taskNodes", {
         taskId,
         projectId: args.projectId,
         type: node.type,
         position: node.position,
-      })
+      });
 
-      nodeIds.push(taskId)
+      nodeIds.push(taskId);
 
       if (node.id) {
-        oldToNewIdMap[node.id] = taskId
+        oldToNewIdMap[node.id] = taskId;
       }
     }
 
     // Create all edges, mapping old IDs to new IDs
-    const edgeIds: Id<'edges'>[] = []
+    const edgeIds: Id<"edges">[] = [];
     for (const edge of args.edges) {
       // Map frontend IDs to Convex IDs
       const sourceId =
-        oldToNewIdMap[edge.source] || (edge.source as Id<'tasks'>)
+        oldToNewIdMap[edge.source] || (edge.source as Id<"tasks">);
       const targetId =
-        oldToNewIdMap[edge.target] || (edge.target as Id<'tasks'>)
+        oldToNewIdMap[edge.target] || (edge.target as Id<"tasks">);
 
-      const edgeId = await ctx.db.insert('edges', {
+      const edgeId = await ctx.db.insert("edges", {
         projectId: args.projectId,
         source: sourceId,
         target: targetId,
@@ -111,13 +111,13 @@ export const syncReactFlowState = mutation({
         targetHandle: edge.targetHandle,
         label: edge.label,
         animated: edge.animated,
-      })
-      edgeIds.push(edgeId)
+      });
+      edgeIds.push(edgeId);
     }
 
-    return { nodeIds, edgeIds }
+    return { nodeIds, edgeIds };
   },
-})
+});
 
 /**
  * Example: Handle React Flow node drag
@@ -127,7 +127,7 @@ export const syncReactFlowState = mutation({
  */
 export const handleNodeDrag = mutation({
   args: {
-    nodeId: v.id('tasks'),
+    nodeId: v.id("tasks"),
     position: v.object({
       x: v.number(),
       y: v.number(),
@@ -136,18 +136,18 @@ export const handleNodeDrag = mutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     const node = await ctx.db
-      .query('taskNodes')
-      .withIndex('by_task', (q) => q.eq('taskId', args.nodeId))
-      .unique()
+      .query("taskNodes")
+      .withIndex("by_task", (q) => q.eq("taskId", args.nodeId))
+      .unique();
 
     if (node) {
       await ctx.db.patch(node._id, {
         position: args.position,
-      })
+      });
     }
-    return null
+    return null;
   },
-})
+});
 
 /**
  * Example: Handle React Flow edge connection
@@ -156,24 +156,24 @@ export const handleNodeDrag = mutation({
  */
 export const handleConnect = mutation({
   args: {
-    projectId: v.id('projects'),
-    source: v.id('tasks'),
-    target: v.id('tasks'),
+    projectId: v.id("projects"),
+    source: v.id("tasks"),
+    target: v.id("tasks"),
     sourceHandle: v.optional(v.string()),
     targetHandle: v.optional(v.string()),
   },
-  returns: v.id('edges'),
+  returns: v.id("edges"),
   handler: async (ctx, args) => {
-    return await ctx.db.insert('edges', {
+    return await ctx.db.insert("edges", {
       projectId: args.projectId,
       source: args.source,
       target: args.target,
       sourceHandle: args.sourceHandle,
       targetHandle: args.targetHandle,
-      type: 'default',
-    })
+      type: "default",
+    });
   },
-})
+});
 
 /**
  * Example: Handle React Flow edge deletion
@@ -182,14 +182,14 @@ export const handleConnect = mutation({
  */
 export const handleEdgeDelete = mutation({
   args: {
-    edgeId: v.id('edges'),
+    edgeId: v.id("edges"),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    await ctx.db.delete(args.edgeId)
-    return null
+    await ctx.db.delete(args.edgeId);
+    return null;
   },
-})
+});
 
 /**
  * Example: Handle React Flow node deletion
@@ -199,40 +199,40 @@ export const handleEdgeDelete = mutation({
  */
 export const handleNodeDelete = mutation({
   args: {
-    nodeId: v.id('tasks'),
+    nodeId: v.id("tasks"),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
     // Delete connected edges
     const outgoingEdges = await ctx.db
-      .query('edges')
-      .withIndex('by_source', (q) => q.eq('source', args.nodeId))
-      .collect()
+      .query("edges")
+      .withIndex("by_source", (q) => q.eq("source", args.nodeId))
+      .collect();
 
     const incomingEdges = await ctx.db
-      .query('edges')
-      .withIndex('by_target', (q) => q.eq('target', args.nodeId))
-      .collect()
+      .query("edges")
+      .withIndex("by_target", (q) => q.eq("target", args.nodeId))
+      .collect();
 
     for (const edge of [...outgoingEdges, ...incomingEdges]) {
-      await ctx.db.delete(edge._id)
+      await ctx.db.delete(edge._id);
     }
 
     // Delete the task node
     const node = await ctx.db
-      .query('taskNodes')
-      .withIndex('by_task', (q) => q.eq('taskId', args.nodeId))
-      .unique()
+      .query("taskNodes")
+      .withIndex("by_task", (q) => q.eq("taskId", args.nodeId))
+      .unique();
 
     if (node) {
-      await ctx.db.delete(node._id)
+      await ctx.db.delete(node._id);
     }
 
     // Delete the task
-    await ctx.db.delete(args.nodeId)
-    return null
+    await ctx.db.delete(args.nodeId);
+    return null;
   },
-})
+});
 
 /*
  * FRONTEND INTEGRATION EXAMPLE (React/TypeScript)

@@ -9,4 +9,3 @@ export async function listUsers() {
   return users.data;
 }
 export type User = Awaited<ReturnType<typeof listUsers>>;
-

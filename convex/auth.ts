@@ -1,6 +1,6 @@
-import { query } from './_generated/server';
-import { v } from 'convex/values';
-import { isSiteAdmin } from './permissions';
+import { v } from "convex/values";
+import { query } from "./_generated/server";
+import { isSiteAdmin } from "./permissions";
 
 export const getCurrentUserStatus = query({
   args: {},

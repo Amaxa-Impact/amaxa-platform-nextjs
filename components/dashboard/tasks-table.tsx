@@ -1,23 +1,36 @@
-'use client';
-import { useState, useEffect, useMemo } from 'react';
-import { usePaginatedQuery, useQuery } from 'convex/react';
-import { api } from '@/convex/_generated/api';
-import type { Id } from '@/convex/_generated/dataModel';
-import type { User } from '@workos-inc/node';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+"use client";
+import type { User } from "@workos-inc/node";
+import { usePaginatedQuery, useQuery } from "convex/react";
+import { useEffect, useMemo, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 
 interface TasksTableProps {
-  projectId: Id<'projects'>;
+  projectId: Id<"projects">;
   allUsers: User[];
 }
 
-type TaskStatus = 'todo' | 'in_progress' | 'completed' | 'blocked';
+type TaskStatus = "todo" | "in_progress" | "completed" | "blocked";
 
 interface Filters {
   status: TaskStatus | undefined;
@@ -28,17 +41,20 @@ interface Filters {
 const PAGE_SIZE = 10;
 
 const statusLabels: Record<TaskStatus, string> = {
-  todo: 'To Do',
-  in_progress: 'In Progress',
-  completed: 'Completed',
-  blocked: 'Blocked',
+  todo: "To Do",
+  in_progress: "In Progress",
+  completed: "Completed",
+  blocked: "Blocked",
 };
 
-const statusVariants: Record<TaskStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-  todo: 'outline',
-  in_progress: 'secondary',
-  completed: 'default',
-  blocked: 'destructive',
+const statusVariants: Record<
+  TaskStatus,
+  "default" | "secondary" | "destructive" | "outline"
+> = {
+  todo: "outline",
+  in_progress: "secondary",
+  completed: "default",
+  blocked: "destructive",
 };
 
 function useDebounce<T>(value: T, delay: number): T {
@@ -84,7 +100,7 @@ export function TasksTable({ projectId, allUsers }: TasksTableProps) {
   const [filters, setFilters] = useState<Filters>({
     status: undefined,
     assignedTo: undefined,
-    searchLabel: '',
+    searchLabel: "",
   });
 
   const debouncedSearch = useDebounce(filters.searchLabel, 300);
@@ -97,7 +113,7 @@ export function TasksTable({ projectId, allUsers }: TasksTableProps) {
       assignedTo: filters.assignedTo,
       searchLabel: debouncedSearch || undefined,
     },
-    { initialNumItems: PAGE_SIZE },
+    { initialNumItems: PAGE_SIZE }
   );
 
   const projectUsers = useQuery(api.dashboard.getProjectUsers, { projectId });
@@ -111,13 +127,15 @@ export function TasksTable({ projectId, allUsers }: TasksTableProps) {
   }, [allUsers]);
 
   const formatDate = (timestamp: number | null) => {
-    if (!timestamp) return '-';
+    if (!timestamp) {
+      return "-";
+    }
     return new Date(timestamp).toLocaleDateString();
   };
 
-  const isLoading = status === 'LoadingFirstPage';
-  const canLoadMore = status === 'CanLoadMore';
-  const isLoadingMore = status === 'LoadingMore';
+  const isLoading = status === "LoadingFirstPage";
+  const canLoadMore = status === "CanLoadMore";
+  const isLoadingMore = status === "LoadingMore";
 
   return (
     <Card>
@@ -128,20 +146,22 @@ export function TasksTable({ projectId, allUsers }: TasksTableProps) {
         {/* Filters */}
         <div className="flex flex-wrap gap-3">
           <Input
+            className="w-[200px]"
+            onChange={(e) =>
+              setFilters((prev) => ({ ...prev, searchLabel: e.target.value }))
+            }
             placeholder="Search tasks..."
             value={filters.searchLabel}
-            onChange={(e) => setFilters((prev) => ({ ...prev, searchLabel: e.target.value }))}
-            className="w-[200px]"
           />
 
           <Select
-            value={filters.status ?? 'all'}
             onValueChange={(value) =>
               setFilters((prev) => ({
                 ...prev,
-                status: value === 'all' ? undefined : (value as TaskStatus),
+                status: value === "all" ? undefined : (value as TaskStatus),
               }))
             }
+            value={filters.status ?? "all"}
           >
             <SelectTrigger className="w-[140px]">
               <SelectValue />
@@ -156,14 +176,15 @@ export function TasksTable({ projectId, allUsers }: TasksTableProps) {
           </Select>
 
           <Select
-            value={filters.assignedTo ?? 'all'}
             onValueChange={(value) => {
-              const newValue = value === 'all' || value === null ? undefined : value;
+              const newValue =
+                value === "all" || value === null ? undefined : value;
               setFilters((prev) => ({
                 ...prev,
                 assignedTo: newValue,
               }));
             }}
+            value={filters.assignedTo ?? "all"}
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue />
@@ -172,7 +193,7 @@ export function TasksTable({ projectId, allUsers }: TasksTableProps) {
               <SelectItem value="all">All Users</SelectItem>
               {projectUsers?.map((user) => (
                 <SelectItem key={user.userId} value={user.userId}>
-                  {userMap.get(user.userId) ?? user.userId.split('|')[1]}
+                  {userMap.get(user.userId) ?? user.userId.split("|")[1]}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -180,14 +201,14 @@ export function TasksTable({ projectId, allUsers }: TasksTableProps) {
 
           {(filters.status || filters.assignedTo || filters.searchLabel) && (
             <Button
-              variant="ghost"
               onClick={() =>
                 setFilters({
                   status: undefined,
                   assignedTo: undefined,
-                  searchLabel: '',
+                  searchLabel: "",
                 })
               }
+              variant="ghost"
             >
               Clear Filters
             </Button>
@@ -209,7 +230,10 @@ export function TasksTable({ projectId, allUsers }: TasksTableProps) {
               <TableSkeleton />
             ) : results.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center text-muted-foreground">
+                <TableCell
+                  className="text-center text-muted-foreground"
+                  colSpan={4}
+                >
                   No tasks found
                 </TableCell>
               </TableRow>
@@ -219,10 +243,16 @@ export function TasksTable({ projectId, allUsers }: TasksTableProps) {
                   <TableRow key={task._id}>
                     <TableCell className="font-medium">{task.label}</TableCell>
                     <TableCell>{formatDate(task.dueDate)}</TableCell>
-                    <TableCell>{task.assignedTo ? (userMap.get(task.assignedTo) ?? 'Unknown') : '-'}</TableCell>
+                    <TableCell>
+                      {task.assignedTo
+                        ? (userMap.get(task.assignedTo) ?? "Unknown")
+                        : "-"}
+                    </TableCell>
                     <TableCell>
                       {task.status ? (
-                        <Badge variant={statusVariants[task.status]}>{statusLabels[task.status]}</Badge>
+                        <Badge variant={statusVariants[task.status]}>
+                          {statusLabels[task.status]}
+                        </Badge>
                       ) : (
                         <Badge variant="outline">Not Set</Badge>
                       )}
@@ -238,16 +268,25 @@ export function TasksTable({ projectId, allUsers }: TasksTableProps) {
         {/* Load More / Pagination */}
         {!isLoading && results.length > 0 && (
           <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              Showing {results.length} task{results.length !== 1 ? 's' : ''}
+            <p className="text-muted-foreground text-sm">
+              Showing {results.length} task{results.length !== 1 ? "s" : ""}
             </p>
             <div className="flex items-center gap-2">
               {canLoadMore && (
-                <Button variant="outline" size="sm" onClick={() => loadMore(PAGE_SIZE)} disabled={isLoadingMore}>
-                  {isLoadingMore ? 'Loading...' : 'Load More'}
+                <Button
+                  disabled={isLoadingMore}
+                  onClick={() => loadMore(PAGE_SIZE)}
+                  size="sm"
+                  variant="outline"
+                >
+                  {isLoadingMore ? "Loading..." : "Load More"}
                 </Button>
               )}
-              {status === 'Exhausted' && <span className="text-sm text-muted-foreground">All tasks loaded</span>}
+              {status === "Exhausted" && (
+                <span className="text-muted-foreground text-sm">
+                  All tasks loaded
+                </span>
+              )}
             </div>
           </div>
         )}

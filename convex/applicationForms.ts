@@ -1,6 +1,6 @@
-import { query, mutation } from './_generated/server';
-import { v } from 'convex/values';
-import { requireSiteAdmin } from './permissions';
+import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
+import { requireSiteAdmin } from "./permissions";
 
 export const create = mutation({
   args: {
@@ -8,20 +8,20 @@ export const create = mutation({
     description: v.optional(v.string()),
     slug: v.string(),
   },
-  returns: v.id('applicationForms'),
+  returns: v.id("applicationForms"),
   handler: async (ctx, args) => {
     const userId = await requireSiteAdmin(ctx);
 
     const existing = await ctx.db
-      .query('applicationForms')
-      .withIndex('by_slug', (q) => q.eq('slug', args.slug))
+      .query("applicationForms")
+      .withIndex("by_slug", (q) => q.eq("slug", args.slug))
       .unique();
 
     if (existing) {
-      throw new Error('A form with this slug already exists');
+      throw new Error("A form with this slug already exists");
     }
 
-    const formId = await ctx.db.insert('applicationForms', {
+    const formId = await ctx.db.insert("applicationForms", {
       title: args.title,
       description: args.description,
       slug: args.slug,
@@ -35,7 +35,7 @@ export const create = mutation({
 
 export const update = mutation({
   args: {
-    formId: v.id('applicationForms'),
+    formId: v.id("applicationForms"),
     title: v.optional(v.string()),
     description: v.optional(v.string()),
     slug: v.optional(v.string()),
@@ -47,17 +47,17 @@ export const update = mutation({
 
     const form = await ctx.db.get(args.formId);
     if (!form) {
-      throw new Error('Form not found');
+      throw new Error("Form not found");
     }
 
     if (args.slug && args.slug !== form.slug) {
       const existing = await ctx.db
-        .query('applicationForms')
-        .withIndex('by_slug', (q) => q.eq('slug', args.slug!))
+        .query("applicationForms")
+        .withIndex("by_slug", (q) => q.eq("slug", args.slug!))
         .unique();
 
       if (existing) {
-        throw new Error('A form with this slug already exists');
+        throw new Error("A form with this slug already exists");
       }
     }
 
@@ -69,11 +69,11 @@ export const update = mutation({
 
 export const get = query({
   args: {
-    formId: v.id('applicationForms'),
+    formId: v.id("applicationForms"),
   },
   returns: v.union(
     v.object({
-      _id: v.id('applicationForms'),
+      _id: v.id("applicationForms"),
       _creationTime: v.number(),
       title: v.string(),
       description: v.optional(v.string()),
@@ -95,7 +95,7 @@ export const getBySlug = query({
   },
   returns: v.union(
     v.object({
-      _id: v.id('applicationForms'),
+      _id: v.id("applicationForms"),
       _creationTime: v.number(),
       title: v.string(),
       description: v.optional(v.string()),
@@ -107,8 +107,8 @@ export const getBySlug = query({
   ),
   handler: async (ctx, args) => {
     const form = await ctx.db
-      .query('applicationForms')
-      .withIndex('by_slug', (q) => q.eq('slug', args.slug))
+      .query("applicationForms")
+      .withIndex("by_slug", (q) => q.eq("slug", args.slug))
       .unique();
 
     if (form && !form.isPublished) {
@@ -123,7 +123,7 @@ export const list = query({
   args: {},
   returns: v.array(
     v.object({
-      _id: v.id('applicationForms'),
+      _id: v.id("applicationForms"),
       _creationTime: v.number(),
       title: v.string(),
       description: v.optional(v.string()),
@@ -136,13 +136,13 @@ export const list = query({
   handler: async (ctx) => {
     await requireSiteAdmin(ctx);
 
-    const forms = await ctx.db.query('applicationForms').collect();
+    const forms = await ctx.db.query("applicationForms").collect();
 
     const formsWithCounts = await Promise.all(
       forms.map(async (form) => {
         const responses = await ctx.db
-          .query('applicationResponses')
-          .withIndex('by_form', (q) => q.eq('formId', form._id))
+          .query("applicationResponses")
+          .withIndex("by_form", (q) => q.eq("formId", form._id))
           .collect();
 
         return {
@@ -158,21 +158,21 @@ export const list = query({
 
 export const remove = mutation({
   args: {
-    formId: v.id('applicationForms'),
+    formId: v.id("applicationForms"),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
     await requireSiteAdmin(ctx);
 
     const responses = await ctx.db
-      .query('applicationResponses')
-      .withIndex('by_form', (q) => q.eq('formId', args.formId))
+      .query("applicationResponses")
+      .withIndex("by_form", (q) => q.eq("formId", args.formId))
       .collect();
 
     for (const response of responses) {
       const fieldResponses = await ctx.db
-        .query('applicationFieldResponses')
-        .withIndex('by_response', (q) => q.eq('responseId', response._id))
+        .query("applicationFieldResponses")
+        .withIndex("by_response", (q) => q.eq("responseId", response._id))
         .collect();
 
       for (const fieldResponse of fieldResponses) {
@@ -183,8 +183,8 @@ export const remove = mutation({
     }
 
     const fields = await ctx.db
-      .query('applicationFormFields')
-      .withIndex('by_form', (q) => q.eq('formId', args.formId))
+      .query("applicationFormFields")
+      .withIndex("by_form", (q) => q.eq("formId", args.formId))
       .collect();
 
     for (const field of fields) {

@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { Preloaded, usePreloadedQuery, useQuery } from 'convex/react';
-import { api } from '@/convex/_generated/api';
+import { type Preloaded, usePreloadedQuery } from "convex/react";
+import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { api } from "@/convex/_generated/api";
 
 interface HomeClientProps {
   userId: string | null;
@@ -19,12 +19,16 @@ interface HomeClientProps {
   prefetchProjects: Preloaded<typeof api.projects.listForUser>;
 }
 
-export function HomeClient({ userId, isAdmin, prefetchProjects }: HomeClientProps) {
+export function HomeClient({
+  userId,
+  isAdmin,
+  prefetchProjects,
+}: HomeClientProps) {
   const projects = usePreloadedQuery(prefetchProjects);
 
   if (!userId) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-3.5rem)]">
+      <div className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center">
         <Card className="max-w-md">
           <CardHeader>
             <CardTitle>Welcome to Amaxa</CardTitle>
@@ -41,7 +45,7 @@ export function HomeClient({ userId, isAdmin, prefetchProjects }: HomeClientProp
     return (
       <div className="container mx-auto px-6 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Welcome, Admin</h1>
+          <h1 className="mb-2 font-bold text-3xl">Welcome, Admin</h1>
           <p className="text-muted-foreground">
             Manage your platform from the dashboard
           </p>
@@ -54,7 +58,7 @@ export function HomeClient({ userId, isAdmin, prefetchProjects }: HomeClientProp
               <CardDescription>Manage all projects</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">
+              <div className="font-bold text-3xl">
                 {projects === undefined ? (
                   <Skeleton className="h-10 w-20" />
                 ) : (
@@ -71,8 +75,8 @@ export function HomeClient({ userId, isAdmin, prefetchProjects }: HomeClientProp
             </CardHeader>
             <CardContent>
               <Link
-                href="/applications"
                 className="text-primary hover:underline"
+                href="/applications"
               >
                 View Applications →
               </Link>
@@ -86,12 +90,12 @@ export function HomeClient({ userId, isAdmin, prefetchProjects }: HomeClientProp
   if (projects === undefined) {
     return (
       <div className="container mx-auto px-6 py-8">
-        <h1 className="text-3xl font-bold mb-6">My Projects</h1>
+        <h1 className="mb-6 font-bold text-3xl">My Projects</h1>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map((i) => (
             <Card key={i}>
               <CardHeader>
-                <Skeleton className="h-6 w-3/4 mb-2" />
+                <Skeleton className="mb-2 h-6 w-3/4" />
                 <Skeleton className="h-4 w-full" />
               </CardHeader>
             </Card>
@@ -103,7 +107,7 @@ export function HomeClient({ userId, isAdmin, prefetchProjects }: HomeClientProp
 
   if (projects.length === 0) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-3.5rem)]">
+      <div className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center">
         <Card className="max-w-md">
           <CardHeader>
             <CardTitle>No Projects Yet</CardTitle>
@@ -119,16 +123,16 @@ export function HomeClient({ userId, isAdmin, prefetchProjects }: HomeClientProp
 
   return (
     <div className="container mx-auto px-6 py-8">
-      <h1 className="text-3xl font-bold mb-6">My Projects</h1>
+      <h1 className="mb-6 font-bold text-3xl">My Projects</h1>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {projects.map((project) => (
           <Link href={`/project/${project._id}`} key={project._id}>
-            <Card className="hover:ring-2 hover:ring-primary transition-all cursor-pointer h-full">
+            <Card className="h-full cursor-pointer transition-all hover:ring-2 hover:ring-primary">
               <CardHeader>
-                <div className="flex items-center justify-between mb-2">
+                <div className="mb-2 flex items-center justify-between">
                   <CardTitle className="text-xl">{project.name}</CardTitle>
                   <Badge
-                    variant={project.role === 'coach' ? 'default' : 'secondary'}
+                    variant={project.role === "coach" ? "default" : "secondary"}
                   >
                     {project.role}
                   </Badge>

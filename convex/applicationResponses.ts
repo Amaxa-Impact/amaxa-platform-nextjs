@@ -1,39 +1,39 @@
-import { query, mutation } from './_generated/server';
-import { v } from 'convex/values';
-import { requireSiteAdmin } from './permissions';
+import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
+import { requireSiteAdmin } from "./permissions";
 
 const statusValidator = v.union(
-  v.literal('pending'),
-  v.literal('reviewed'),
-  v.literal('accepted'),
-  v.literal('rejected')
+  v.literal("pending"),
+  v.literal("reviewed"),
+  v.literal("accepted"),
+  v.literal("rejected")
 );
 
 export const submit = mutation({
   args: {
-    formId: v.id('applicationForms'),
+    formId: v.id("applicationForms"),
     applicantName: v.string(),
     applicantEmail: v.string(),
     fieldResponses: v.array(
       v.object({
-        fieldId: v.id('applicationFormFields'),
+        fieldId: v.id("applicationFormFields"),
         value: v.union(v.string(), v.array(v.string())),
       })
     ),
   },
-  returns: v.id('applicationResponses'),
+  returns: v.id("applicationResponses"),
   handler: async (ctx, args) => {
     const form = await ctx.db.get(args.formId);
     if (!form) {
-      throw new Error('Form not found');
+      throw new Error("Form not found");
     }
     if (!form.isPublished) {
-      throw new Error('This form is not accepting applications');
+      throw new Error("This form is not accepting applications");
     }
 
     const fields = await ctx.db
-      .query('applicationFormFields')
-      .withIndex('by_form', (q) => q.eq('formId', args.formId))
+      .query("applicationFormFields")
+      .withIndex("by_form", (q) => q.eq("formId", args.formId))
       .collect();
 
     const providedFieldIds = new Set(
@@ -46,21 +46,21 @@ export const submit = mutation({
       }
     }
 
-    const responseId = await ctx.db.insert('applicationResponses', {
+    const responseId = await ctx.db.insert("applicationResponses", {
       formId: args.formId,
       applicantName: args.applicantName,
       applicantEmail: args.applicantEmail,
       submittedAt: Date.now(),
-      status: 'pending',
+      status: "pending",
     });
 
     for (const fieldResponse of args.fieldResponses) {
       const field = await ctx.db.get(fieldResponse.fieldId);
       if (!field || field.formId !== args.formId) {
-        throw new Error('Invalid field');
+        throw new Error("Invalid field");
       }
 
-      await ctx.db.insert('applicationFieldResponses', {
+      await ctx.db.insert("applicationFieldResponses", {
         responseId,
         fieldId: fieldResponse.fieldId,
         value: fieldResponse.value,
@@ -73,14 +73,14 @@ export const submit = mutation({
 
 export const list = query({
   args: {
-    formId: v.id('applicationForms'),
+    formId: v.id("applicationForms"),
     status: v.optional(statusValidator),
   },
   returns: v.array(
     v.object({
-      _id: v.id('applicationResponses'),
+      _id: v.id("applicationResponses"),
       _creationTime: v.number(),
-      formId: v.id('applicationForms'),
+      formId: v.id("applicationForms"),
       submittedAt: v.number(),
       applicantName: v.string(),
       applicantEmail: v.string(),
@@ -94,15 +94,15 @@ export const list = query({
 
     if (args.status) {
       responses = await ctx.db
-        .query('applicationResponses')
-        .withIndex('by_form_and_status', (q) =>
-          q.eq('formId', args.formId).eq('status', args.status!)
+        .query("applicationResponses")
+        .withIndex("by_form_and_status", (q) =>
+          q.eq("formId", args.formId).eq("status", args.status!)
         )
         .collect();
     } else {
       responses = await ctx.db
-        .query('applicationResponses')
-        .withIndex('by_form', (q) => q.eq('formId', args.formId))
+        .query("applicationResponses")
+        .withIndex("by_form", (q) => q.eq("formId", args.formId))
         .collect();
     }
 
@@ -112,20 +112,20 @@ export const list = query({
 
 export const get = query({
   args: {
-    responseId: v.id('applicationResponses'),
+    responseId: v.id("applicationResponses"),
   },
   returns: v.union(
     v.object({
-      _id: v.id('applicationResponses'),
+      _id: v.id("applicationResponses"),
       _creationTime: v.number(),
-      formId: v.id('applicationForms'),
+      formId: v.id("applicationForms"),
       submittedAt: v.number(),
       applicantName: v.string(),
       applicantEmail: v.string(),
       status: statusValidator,
       fieldResponses: v.array(
         v.object({
-          fieldId: v.id('applicationFormFields'),
+          fieldId: v.id("applicationFormFields"),
           fieldLabel: v.string(),
           fieldType: v.string(),
           value: v.union(v.string(), v.array(v.string())),
@@ -143,8 +143,8 @@ export const get = query({
     }
 
     const fieldResponses = await ctx.db
-      .query('applicationFieldResponses')
-      .withIndex('by_response', (q) => q.eq('responseId', args.responseId))
+      .query("applicationFieldResponses")
+      .withIndex("by_response", (q) => q.eq("responseId", args.responseId))
       .collect();
 
     const enrichedResponses = await Promise.all(
@@ -152,8 +152,8 @@ export const get = query({
         const field = await ctx.db.get(fr.fieldId);
         return {
           fieldId: fr.fieldId,
-          fieldLabel: field?.label ?? 'Unknown',
-          fieldType: field?.type ?? 'text',
+          fieldLabel: field?.label ?? "Unknown",
+          fieldType: field?.type ?? "text",
           value: fr.value,
         };
       })
@@ -168,7 +168,7 @@ export const get = query({
 
 export const updateStatus = mutation({
   args: {
-    responseId: v.id('applicationResponses'),
+    responseId: v.id("applicationResponses"),
     status: statusValidator,
   },
   returns: v.null(),
@@ -177,7 +177,7 @@ export const updateStatus = mutation({
 
     const response = await ctx.db.get(args.responseId);
     if (!response) {
-      throw new Error('Response not found');
+      throw new Error("Response not found");
     }
 
     await ctx.db.patch(args.responseId, { status: args.status });
@@ -187,7 +187,7 @@ export const updateStatus = mutation({
 
 export const remove = mutation({
   args: {
-    responseId: v.id('applicationResponses'),
+    responseId: v.id("applicationResponses"),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
@@ -195,12 +195,12 @@ export const remove = mutation({
 
     const response = await ctx.db.get(args.responseId);
     if (!response) {
-      throw new Error('Response not found');
+      throw new Error("Response not found");
     }
 
     const fieldResponses = await ctx.db
-      .query('applicationFieldResponses')
-      .withIndex('by_response', (q) => q.eq('responseId', args.responseId))
+      .query("applicationFieldResponses")
+      .withIndex("by_response", (q) => q.eq("responseId", args.responseId))
       .collect();
 
     for (const fr of fieldResponses) {
@@ -212,4 +212,3 @@ export const remove = mutation({
     return null;
   },
 });
-

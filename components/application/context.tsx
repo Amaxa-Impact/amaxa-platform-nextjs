@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { api } from '@/convex/_generated/api';
-import { Id } from '@/convex/_generated/dataModel';
-import { useQuery } from 'convex/react';
-import { createContext, useContext } from 'react';
+import { useQuery } from "convex/react";
+import { createContext, useContext } from "react";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 
 interface FormContext {
-  _id: Id<'applicationForms'>;
+  _id: Id<"applicationForms">;
   title: string;
   description: string | undefined;
   isPublished: boolean;
@@ -15,12 +15,12 @@ interface FormContext {
 }
 
 export const FormContext = createContext<FormContext>({
-  _id: '' as Id<'applicationForms'>,
-  title: '',
+  _id: "" as Id<"applicationForms">,
+  title: "",
   description: undefined,
   isPublished: false,
-  slug: '',
-  createdBy: '',
+  slug: "",
+  createdBy: "",
 });
 
 export const ApplicationFormProvider = ({
@@ -28,7 +28,7 @@ export const ApplicationFormProvider = ({
   formId,
 }: {
   children: React.ReactNode;
-  formId: Id<'applicationForms'>;
+  formId: Id<"applicationForms">;
 }) => {
   const form = useQuery(api.applicationForms.get, {
     formId,
@@ -58,7 +58,7 @@ export const useApplicationForm = () => {
   const context = useContext(FormContext);
 
   if (!context) {
-    throw new Error('useApplicationForm must be used within a FormProvider');
+    throw new Error("useApplicationForm must be used within a FormProvider");
   }
 
   return context;

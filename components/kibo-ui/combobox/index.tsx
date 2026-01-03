@@ -28,12 +28,12 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-type ComboboxData = {
+interface ComboboxData {
   label: string;
   value: string;
-};
+}
 
-type ComboboxContextType = {
+interface ComboboxContextType {
   data: ComboboxData[];
   type: string;
   value: string;
@@ -44,7 +44,7 @@ type ComboboxContextType = {
   setWidth: (width: number) => void;
   inputValue: string;
   setInputValue: (value: string) => void;
-};
+}
 
 const ComboboxContext = createContext<ComboboxContextType>({
   data: [],
@@ -142,17 +142,19 @@ export const ComboboxTrigger = ({
   }, [setWidth]);
 
   return (
-    <PopoverTrigger render={<Button variant="outline" {...props} ref={ref} />}>{children ?? (
-                <span className="flex w-full items-center justify-between gap-2">
-                  {value
-                    ? data.find((item) => item.value === value)?.label
-                    : `Select ${type}...`}
-                  <ChevronsUpDownIcon
-                    className="shrink-0 text-muted-foreground"
-                    size={16}
-                  />
-                </span>
-              )}</PopoverTrigger>
+    <PopoverTrigger render={<Button variant="outline" {...props} ref={ref} />}>
+      {children ?? (
+        <span className="flex w-full items-center justify-between gap-2">
+          {value
+            ? data.find((item) => item.value === value)?.label
+            : `Select ${type}...`}
+          <ChevronsUpDownIcon
+            className="shrink-0 text-muted-foreground"
+            size={16}
+          />
+        </span>
+      )}
+    </PopoverTrigger>
   );
 };
 
@@ -255,11 +257,11 @@ export const ComboboxSeparator = (props: ComboboxSeparatorProps) => (
   <CommandSeparator {...props} />
 );
 
-export type ComboboxCreateNewProps = {
+export interface ComboboxCreateNewProps {
   onCreateNew: (value: string) => void;
   children?: (inputValue: string) => ReactNode;
   className?: string;
-};
+}
 
 export const ComboboxCreateNew = ({
   onCreateNew,

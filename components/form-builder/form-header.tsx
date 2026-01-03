@@ -1,21 +1,21 @@
 /* eslint-disable react/no-children-prop */
 /** biome-ignore-all lint/correctness/noChildrenProp: <explanation> */
-'use client';
-import { useCallback, useRef, useState, useEffect } from 'react';
-import { useForm } from '@tanstack/react-form';
-import { api } from '@/convex/_generated/api';
-import type { Id } from '@/convex/_generated/dataModel';
-import { toast } from 'sonner';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { cn } from '@/lib/utils';
-import type { FormData } from './types';
-import { useMutation } from 'convex/react';
+"use client";
+import { useForm } from "@tanstack/react-form";
+import { useMutation } from "convex/react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import { cn } from "@/lib/utils";
+import type { FormData } from "./types";
 
 interface FormHeaderProps {
   form: FormData;
-  formId: Id<'applicationForms'>;
+  formId: Id<"applicationForms">;
 }
 
 export function FormHeader({ form, formId }: FormHeaderProps) {
@@ -29,13 +29,15 @@ export function FormHeader({ form, formId }: FormHeaderProps) {
   const formState = useForm({
     defaultValues: {
       title: form.title,
-      description: form.description ?? '',
+      description: form.description ?? "",
     },
   });
 
   const saveChanges = useCallback(
     async (values: { title: string; description: string }) => {
-      if (!values.title.trim()) return;
+      if (!values.title.trim()) {
+        return;
+      }
 
       setIsSaving(true);
       try {
@@ -44,13 +46,13 @@ export function FormHeader({ form, formId }: FormHeaderProps) {
           title: values.title.trim(),
           description: values.description.trim() || undefined,
         });
-      } catch (error) {
-        toast.error('Failed to save form');
+      } catch (_error) {
+        toast.error("Failed to save form");
       } finally {
         setIsSaving(false);
       }
     },
-    [formId, updateForm],
+    [formId, updateForm]
   );
 
   const debouncedSave = useCallback(
@@ -62,7 +64,7 @@ export function FormHeader({ form, formId }: FormHeaderProps) {
         saveChanges(values);
       }, 500);
     },
-    [saveChanges],
+    [saveChanges]
   );
 
   useEffect(() => {
@@ -76,27 +78,35 @@ export function FormHeader({ form, formId }: FormHeaderProps) {
   return (
     <Card
       className={cn(
-        'transition-all border-t-4',
-        isActive ? 'border-t-primary ring-1 ring-primary/20' : 'border-t-primary/50',
+        "border-t-4 transition-all",
+        isActive
+          ? "border-t-primary ring-1 ring-primary/20"
+          : "border-t-primary/50"
       )}
-      onClick={() => setIsActive(true)}
       onBlur={(e) => {
         if (!e.currentTarget.contains(e.relatedTarget)) {
           setIsActive(false);
         }
       }}
+      onClick={() => setIsActive(true)}
     >
-      <CardContent className="pt-6 space-y-4">
-        {isSaving && <div className="text-xs text-muted-foreground text-right">Saving...</div>}
+      <CardContent className="space-y-4 pt-6">
+        {isSaving && (
+          <div className="text-right text-muted-foreground text-xs">
+            Saving...
+          </div>
+        )}
 
         <formState.Field
-          name="title"
           children={(field) => (
             <Input
-              ref={titleInputRef}
+              className={cn(
+                "rounded-none border-0 border-b px-0 font-bold text-2xl focus-visible:border-primary focus-visible:ring-0",
+                isActive ? "border-b-2" : ""
+              )}
               id="form-title"
               name={field.name}
-              value={field.state.value}
+              onBlur={field.handleBlur}
               onChange={(e) => {
                 field.handleChange(e.target.value);
                 debouncedSave({
@@ -104,23 +114,24 @@ export function FormHeader({ form, formId }: FormHeaderProps) {
                   description: formState.state.values.description,
                 });
               }}
-              onBlur={field.handleBlur}
               placeholder="Form title"
-              className={cn(
-                'border-0 border-b rounded-none focus-visible:ring-0 focus-visible:border-primary px-0 text-2xl font-bold',
-                isActive ? 'border-b-2' : '',
-              )}
+              ref={titleInputRef}
+              value={field.state.value}
             />
           )}
+          name="title"
         />
 
         <formState.Field
-          name="description"
           children={(field) => (
             <Textarea
+              className={cn(
+                "resize-none rounded-none border-0 border-b px-0 focus-visible:border-primary focus-visible:ring-0",
+                isActive ? "border-b-2" : ""
+              )}
               id="form-description"
               name={field.name}
-              value={field.state.value}
+              onBlur={field.handleBlur}
               onChange={(e) => {
                 field.handleChange(e.target.value);
                 debouncedSave({
@@ -128,15 +139,12 @@ export function FormHeader({ form, formId }: FormHeaderProps) {
                   description: e.target.value,
                 });
               }}
-              onBlur={field.handleBlur}
               placeholder="Form description (optional)"
               rows={2}
-              className={cn(
-                'border-0 border-b rounded-none focus-visible:ring-0 focus-visible:border-primary px-0 resize-none',
-                isActive ? 'border-b-2' : '',
-              )}
+              value={field.state.value}
             />
           )}
+          name="description"
         />
       </CardContent>
     </Card>

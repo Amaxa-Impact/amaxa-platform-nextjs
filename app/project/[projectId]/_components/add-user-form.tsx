@@ -1,14 +1,20 @@
 /** biome-ignore-all lint/correctness/noChildrenProp: This is a workaround to fix the linting error. */
-"use client"
-import * as React from "react";
+"use client";
 import { useForm } from "@tanstack/react-form";
+import { useMutation } from "convex/react";
+import * as React from "react";
 import { toast } from "sonner";
 import * as z from "zod";
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
-import type { User } from "@/lib/workos";
-
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxGroup,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxTrigger,
+} from "@/components/kibo-ui/combobox";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,22 +26,14 @@ import {
 } from "@/components/ui/dialog";
 import {
   Field,
-  FieldContent,
   FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import {
-  Combobox,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxGroup,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-  ComboboxTrigger,
-} from "@/components/kibo-ui/combobox";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import type { User } from "@/lib/workos";
 
 const formSchema = z.object({
   userId: z.string().min(1, "Please select a user."),
@@ -59,8 +57,6 @@ export function AddUserForm({
 }) {
   const assignUser = useMutation(api.userToProject.assign);
 
-
-  
   const availableUsers = React.useMemo(() => {
     return allUsers
       .filter((user) => !existingUserIds?.includes(user.id))
@@ -101,7 +97,6 @@ export function AddUserForm({
     },
   });
 
-  
   React.useEffect(() => {
     if (!open) {
       form.reset();
@@ -109,7 +104,7 @@ export function AddUserForm({
   }, [open, form]);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Add User to Project</DialogTitle>
@@ -127,7 +122,6 @@ export function AddUserForm({
         >
           <FieldGroup>
             <form.Field
-              name="userId"
               children={(field) => {
                 const isInvalid =
                   field.state.meta.isTouched && !field.state.meta.isValid;
@@ -137,16 +131,16 @@ export function AddUserForm({
                     <FieldLabel htmlFor="add-user-form-userId">User</FieldLabel>
                     <Combobox
                       data={availableUsers}
-                      type="user"
-                      value={field.state.value}
+                      onOpenChange={undefined}
                       onValueChange={field.handleChange}
                       open={undefined}
-                      onOpenChange={undefined}
+                      type="user"
+                      value={field.state.value}
                     >
                       <ComboboxTrigger
-                        id="add-user-form-userId"
-                        className="w-full"
                         aria-invalid={isInvalid}
+                        className="w-full"
+                        id="add-user-form-userId"
                       />
                       <ComboboxContent>
                         <ComboboxInput />
@@ -154,10 +148,7 @@ export function AddUserForm({
                           <ComboboxEmpty>No users found.</ComboboxEmpty>
                           <ComboboxGroup>
                             {availableUsers.map((user) => (
-                              <ComboboxItem
-                                key={user.value}
-                                value={user.value}
-                              >
+                              <ComboboxItem key={user.value} value={user.value}>
                                 {user.label}
                               </ComboboxItem>
                             ))}
@@ -174,10 +165,10 @@ export function AddUserForm({
                   </Field>
                 );
               }}
+              name="userId"
             />
 
             <form.Field
-              name="role"
               children={(field) => {
                 const isInvalid =
                   field.state.meta.isTouched && !field.state.meta.isValid;
@@ -192,16 +183,18 @@ export function AddUserForm({
                     <FieldLabel htmlFor="add-user-form-role">Role</FieldLabel>
                     <Combobox
                       data={roleOptions}
+                      onOpenChange={undefined}
+                      onValueChange={(value) =>
+                        field.handleChange(value as "coach" | "member")
+                      }
+                      open={undefined}
                       type="role"
                       value={field.state.value}
-                      onValueChange={(value) => field.handleChange(value as "coach" | "member")}
-                      open={undefined}
-                      onOpenChange={undefined}
                     >
                       <ComboboxTrigger
-                        id="add-user-form-role"
-                        className="w-full"
                         aria-invalid={isInvalid}
+                        className="w-full"
+                        id="add-user-form-role"
                       />
                       <ComboboxContent>
                         <ComboboxInput />
@@ -226,22 +219,23 @@ export function AddUserForm({
                   </Field>
                 );
               }}
+              name="role"
             />
           </FieldGroup>
         </form>
 
         <DialogFooter>
           <Button
-            type="button"
-            variant="outline"
             onClick={() => {
               form.reset();
               onOpenChange(false);
             }}
+            type="button"
+            variant="outline"
           >
             Cancel
           </Button>
-          <Button type="submit" form="add-user-form">
+          <Button form="add-user-form" type="submit">
             Add User
           </Button>
         </DialogFooter>

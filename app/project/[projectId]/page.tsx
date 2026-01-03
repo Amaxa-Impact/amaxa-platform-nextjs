@@ -1,15 +1,15 @@
-import { Id } from "@/convex/_generated/dataModel";
-import { HomePage } from "./_components/home-page";
-import { preloadQuery } from "convex/nextjs";
-import { listUsers } from "@/lib/workos";
-import { api } from "@/convex/_generated/api";
 import { withAuth } from "@workos-inc/authkit-nextjs";
+import { preloadQuery } from "convex/nextjs";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import { listUsers } from "@/lib/workos";
+import { HomePage } from "./_components/home-page";
 
 export default async function Page({
-  params
+  params,
 }: {
   params: Promise<{
-    projectId: Id<'projects'>;
+    projectId: Id<"projects">;
   }>;
 }) {
   const projectId = (await params).projectId;
@@ -17,9 +17,13 @@ export default async function Page({
   const { accessToken } = await withAuth();
   const [allUsers, preloadedData] = await Promise.all([
     listUsers(),
-    preloadQuery(api.dashboard.getTaskStatusCounts, { projectId }, {
-      token: accessToken,
-    }),
+    preloadQuery(
+      api.dashboard.getTaskStatusCounts,
+      { projectId },
+      {
+        token: accessToken,
+      }
+    ),
   ]);
 
   return (

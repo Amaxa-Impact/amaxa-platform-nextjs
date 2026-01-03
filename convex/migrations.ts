@@ -1,5 +1,5 @@
-import { mutation } from './_generated/server'
-import { v } from 'convex/values'
+import { v } from "convex/values";
+import { mutation } from "./_generated/server";
 
 /**
  * Migration: Update all 'default' roles to 'member'
@@ -11,19 +11,19 @@ export const migrateDefaultToMember = mutation({
     updated: v.number(),
   }),
   handler: async (ctx) => {
-    const allAssignments = await ctx.db.query('userToProject').collect()
-    let updated = 0
+    const allAssignments = await ctx.db.query("userToProject").collect();
+    let updated = 0;
 
     for (const assignment of allAssignments) {
       await ctx.db.patch(assignment._id, {
-        role: 'member',
-      })
-      updated++
+        role: "member",
+      });
+      updated++;
     }
 
-    return { updated }
+    return { updated };
   },
-})
+});
 
 /**
  * Migration: Migrate tasks from old schema (with nested data) to new schema (flat fields)
@@ -37,52 +37,52 @@ export const migrateTasksToNewSchema = mutation({
     nodesCreated: v.number(),
   }),
   handler: async (ctx) => {
-    const allTasks = await ctx.db.query('tasks').collect()
-    let tasksUpdated = 0
-    let nodesCreated = 0
+    const allTasks = await ctx.db.query("tasks").collect();
+    let tasksUpdated = 0;
+    let nodesCreated = 0;
 
     for (const task of allTasks) {
-      const taskAny = task as any
+      const taskAny = task as any;
 
-      if (taskAny.data && typeof taskAny.data === 'object') {
-        const oldData = taskAny.data
-        const position = taskAny.position
-        const type = taskAny.type || 'task'
+      if (taskAny.data && typeof taskAny.data === "object") {
+        const oldData = taskAny.data;
+        const position = taskAny.position;
+        const type = taskAny.type || "task";
 
         await ctx.db.patch(task._id, {
-          label: oldData.label || 'Untitled Task',
+          label: oldData.label || "Untitled Task",
           description: oldData.description,
           status: oldData.status,
           assignedTo: oldData.assignedTo,
           dueDate: oldData.dueDate,
           priority: oldData.priority,
-        })
+        });
 
         const existingNode = await ctx.db
-          .query('taskNodes')
-          .withIndex('by_task', (q) => q.eq('taskId', task._id))
-          .unique()
+          .query("taskNodes")
+          .withIndex("by_task", (q) => q.eq("taskId", task._id))
+          .unique();
 
         if (!existingNode && position) {
-          await ctx.db.insert('taskNodes', {
+          await ctx.db.insert("taskNodes", {
             taskId: task._id,
             projectId: task.projectId,
-            type: type,
-            position: position,
+            type,
+            position,
             width: taskAny.width,
             height: taskAny.height,
             style: taskAny.style,
-          })
-          nodesCreated++
+          });
+          nodesCreated++;
         }
 
-        tasksUpdated++
+        tasksUpdated++;
       }
     }
 
-    return { tasksUpdated, nodesCreated }
+    return { tasksUpdated, nodesCreated };
   },
-})
+});
 
 /**
  * Migration: Clean up old fields from tasks after migration
@@ -94,17 +94,17 @@ export const cleanupOldTaskFields = mutation({
     cleaned: v.number(),
   }),
   handler: async (ctx) => {
-    const allTasks = await ctx.db.query('tasks').collect()
-    let cleaned = 0
+    const allTasks = await ctx.db.query("tasks").collect();
+    let cleaned = 0;
 
     for (const task of allTasks) {
-      const taskAny = task as any
+      const taskAny = task as any;
 
       if (taskAny.data || taskAny.position || taskAny.type) {
-        cleaned++
+        cleaned++;
       }
     }
 
-    return { cleaned }
+    return { cleaned };
   },
-})
+});

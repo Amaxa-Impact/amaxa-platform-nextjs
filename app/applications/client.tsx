@@ -1,7 +1,13 @@
-"use client"
+"use client";
 
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { useForm } from "@tanstack/react-form";
+import { type Preloaded, useMutation, usePreloadedQuery } from "convex/react";
+import { Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { z } from "zod";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,8 +16,14 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
+} from "@/components/ui/dialog";
+import {
+  Field,
+  FieldContent,
+  FieldError,
+  FieldLabel,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -19,35 +31,26 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
-import { Textarea } from '@/components/ui/textarea'
-import {
-  Field,
-  FieldContent,
-  FieldError,
-  FieldLabel,
-} from '@/components/ui/field'
-import { useForm } from '@tanstack/react-form'
-import { toast } from 'sonner'
-import { useMutation, usePreloadedQuery, type Preloaded} from 'convex/react'
-import { api } from '@/convex/_generated/api'
-import { Plus } from 'lucide-react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { z } from 'zod'
+} from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
+import { api } from "@/convex/_generated/api";
 
-export function ApplicationsPageClient({ prefetchForms }: { prefetchForms: Preloaded<typeof api.applicationForms.list> }) {
+export function ApplicationsPageClient({
+  prefetchForms,
+}: {
+  prefetchForms: Preloaded<typeof api.applicationForms.list>;
+}) {
   const forms = usePreloadedQuery(prefetchForms);
   const router = useRouter();
 
   return (
     <div className="flex h-full flex-col">
-      <div className="bg-background sticky top-0 z-10 flex flex-row items-center justify-between p-6">
-        <h1 className="text-xl font-bold">Application Forms</h1>
+      <div className="sticky top-0 z-10 flex flex-row items-center justify-between bg-background p-6">
+        <h1 className="font-bold text-xl">Application Forms</h1>
         <Dialog>
           <DialogTrigger>
-            <Button variant="outline" size="sm" className="ml-2">
-              <Plus className="w-4 h-4" />
+            <Button className="ml-2" size="sm" variant="outline">
+              <Plus className="h-4 w-4" />
               Create Form
             </Button>
           </DialogTrigger>
@@ -59,7 +62,7 @@ export function ApplicationsPageClient({ prefetchForms }: { prefetchForms: Prelo
 
       <main className="flex-1 p-6">
         {forms.length === 0 ? (
-          <div className="text-muted-foreground py-12 text-center">
+          <div className="py-12 text-center text-muted-foreground">
             <p>No application forms yet.</p>
             <p>Create your first form to start collecting applications.</p>
           </div>
@@ -76,8 +79,8 @@ export function ApplicationsPageClient({ prefetchForms }: { prefetchForms: Prelo
             <TableBody>
               {forms.map((form) => (
                 <TableRow
-                  key={form._id}
                   className="cursor-pointer hover:bg-muted/50"
+                  key={form._id}
                   onClick={() => router.push(`/applications/${form._id}/edit`)}
                 >
                   <TableCell className="font-medium">{form.title}</TableCell>
@@ -85,8 +88,8 @@ export function ApplicationsPageClient({ prefetchForms }: { prefetchForms: Prelo
                     /apply/{form.slug}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={form.isPublished ? 'default' : 'secondary'}>
-                      {form.isPublished ? 'Published' : 'Draft'}
+                    <Badge variant={form.isPublished ? "default" : "secondary"}>
+                      {form.isPublished ? "Published" : "Draft"}
                     </Badge>
                   </TableCell>
                   <TableCell>{form.responseCount}</TableCell>
@@ -97,31 +100,31 @@ export function ApplicationsPageClient({ prefetchForms }: { prefetchForms: Prelo
         )}
       </main>
     </div>
-  )
+  );
 }
 
 const createFormSchema = z.object({
-  title: z.string().min(1, 'Title is required.').trim(),
+  title: z.string().min(1, "Title is required.").trim(),
   description: z.string(),
   slug: z
     .string()
-    .min(1, 'Slug is required.')
+    .min(1, "Slug is required.")
     .regex(
       /^[a-z0-9-]+$/,
-      'Slug can only contain lowercase letters, numbers, and hyphens',
+      "Slug can only contain lowercase letters, numbers, and hyphens"
     ),
-})
+});
 
-type CreateFormSchema = z.infer<typeof createFormSchema>
+type CreateFormSchema = z.infer<typeof createFormSchema>;
 
 function CreateFormDialog() {
-  const createForm = useMutation(api.applicationForms.create)
+  const createForm = useMutation(api.applicationForms.create);
 
   const form = useForm({
     defaultValues: {
-      title: '',
-      description: '',
-      slug: '',
+      title: "",
+      description: "",
+      slug: "",
     } satisfies CreateFormSchema,
     validators: {
       onChange: createFormSchema,
@@ -132,34 +135,34 @@ function CreateFormDialog() {
           title: value.title.trim(),
           description: value.description?.trim() || undefined,
           slug: value.slug.trim(),
-        })
-        toast.success('Form created successfully')
-        form.reset()
+        });
+        toast.success("Form created successfully");
+        form.reset();
       } catch (error) {
         toast.error(
-          error instanceof Error ? error.message : 'Failed to create form',
-        )
+          error instanceof Error ? error.message : "Failed to create form"
+        );
       }
     },
-  })
+  });
 
   const generateSlug = () => {
-    const title = form.state.values.title || ''
+    const title = form.state.values.title || "";
     const generatedSlug = title
       .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .trim()
-    form.setFieldValue('slug', generatedSlug)
-  }
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
+      .trim();
+    form.setFieldValue("slug", generatedSlug);
+  };
 
   return (
     <form
       onSubmit={(e) => {
-        e.preventDefault()
-        e.stopPropagation()
-        form.handleSubmit()
+        e.preventDefault();
+        e.stopPropagation();
+        form.handleSubmit();
       }}
     >
       <DialogHeader>
@@ -178,17 +181,17 @@ function CreateFormDialog() {
                 <Input
                   id={field.name}
                   name={field.name}
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
+                  onChange={(e) => field.handleChange(e.target.value)}
                   placeholder="e.g., Summer 2025 Program Application"
+                  value={field.state.value}
                 />
                 <FieldError
                   errors={field.state.meta.errors.map((error) => {
-                    if (typeof error === 'string') {
-                      return { message: error }
+                    if (typeof error === "string") {
+                      return { message: error };
                     }
-                    return undefined
+                    return undefined;
                   })}
                 />
               </FieldContent>
@@ -199,16 +202,18 @@ function CreateFormDialog() {
         <form.Field name="description">
           {(field) => (
             <Field>
-              <FieldLabel htmlFor={field.name}>Description (optional)</FieldLabel>
+              <FieldLabel htmlFor={field.name}>
+                Description (optional)
+              </FieldLabel>
               <FieldContent>
                 <Textarea
                   id={field.name}
                   name={field.name}
-                  value={field.state.value || ''}
-                  onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
+                  onChange={(e) => field.handleChange(e.target.value)}
                   placeholder="Describe what this application is for..."
                   rows={3}
+                  value={field.state.value || ""}
                 />
               </FieldContent>
             </Field>
@@ -221,10 +226,10 @@ function CreateFormDialog() {
               <div className="flex items-center justify-between">
                 <FieldLabel htmlFor={field.name}>URL Slug</FieldLabel>
                 <Button
+                  onClick={generateSlug}
+                  size="sm"
                   type="button"
                   variant="ghost"
-                  size="sm"
-                  onClick={generateSlug}
                 >
                   Generate from title
                 </Button>
@@ -235,21 +240,21 @@ function CreateFormDialog() {
                   <Input
                     id={field.name}
                     name={field.name}
-                    value={field.state.value}
-                    onChange={(e) => {
-                      const lowerValue = e.target.value.toLowerCase()
-                      field.handleChange(lowerValue)
-                    }}
                     onBlur={field.handleBlur}
+                    onChange={(e) => {
+                      const lowerValue = e.target.value.toLowerCase();
+                      field.handleChange(lowerValue);
+                    }}
                     placeholder="summer-2025"
+                    value={field.state.value}
                   />
                 </div>
                 <FieldError
                   errors={field.state.meta.errors.map((error) => {
-                    if (typeof error === 'string') {
-                      return { message: error }
+                    if (typeof error === "string") {
+                      return { message: error };
                     }
-                    return undefined
+                    return undefined;
                   })}
                 />
               </FieldContent>
@@ -263,12 +268,12 @@ function CreateFormDialog() {
           selector={(state) => [state.canSubmit, state.isSubmitting]}
         >
           {([canSubmit, isSubmitting]) => (
-            <Button type="submit" disabled={!canSubmit || isSubmitting}>
-              {isSubmitting ? 'Creating...' : 'Create Form'}
+            <Button disabled={!canSubmit || isSubmitting} type="submit">
+              {isSubmitting ? "Creating..." : "Create Form"}
             </Button>
           )}
         </form.Subscribe>
       </DialogFooter>
     </form>
-  )
+  );
 }

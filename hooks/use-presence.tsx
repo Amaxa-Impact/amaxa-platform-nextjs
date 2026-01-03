@@ -1,14 +1,14 @@
-import { api } from '@/convex/_generated/api';
-import { useQuery, useMutation } from 'convex/react';
-import { useCallback, useEffect, useRef } from 'react';
+import { useMutation, useQuery } from "convex/react";
+import { useCallback, useEffect, useRef } from "react";
+import { api } from "@/convex/_generated/api";
 
-export type PresenceData<D> = {
+export interface PresenceData<D> {
   created: number;
   latestJoin: number;
   user: string;
   data: D;
   present: boolean;
-};
+}
 
 const HEARTBEAT_PERIOD = 3000; // 3 seconds for faster presence detection
 const CURSOR_UPDATE_THROTTLE = 50; // 50ms = 20 updates per second max
@@ -19,7 +19,11 @@ const CURSOR_UPDATE_THROTTLE = 50; // 50ms = 20 updates per second max
  * Uses Convex's real-time subscriptions for live updates.
  * Throttles cursor updates to prevent overwhelming the server.
  */
-export const usePresence = <T extends Record<string, unknown>>(room: string, user: string, initialData: T) => {
+export const usePresence = <T extends Record<string, unknown>>(
+  room: string,
+  user: string,
+  initialData: T
+) => {
   const dataRef = useRef<T>(initialData);
   const lastUpdateRef = useRef<number>(0);
   const pendingUpdateRef = useRef<T | null>(null);
@@ -42,7 +46,7 @@ export const usePresence = <T extends Record<string, unknown>>(room: string, use
     void updatePresenceMutation({ room, user, data: initialData });
 
     return () => {};
-  }, [room, user]);
+  }, [room, user, initialData, updatePresenceMutation]);
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -82,7 +86,7 @@ export const usePresence = <T extends Record<string, unknown>>(room: string, use
         }
       }
     },
-    [room, user, updatePresenceMutation],
+    [room, user, updatePresenceMutation]
   );
 
   useEffect(() => {

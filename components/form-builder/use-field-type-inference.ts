@@ -1,92 +1,96 @@
-import { useState, useCallback, useRef } from 'react'
-import type { FieldType, FieldTypeInferenceResult } from './types'
+import { useCallback, useRef, useState } from "react";
+import type { FieldType, FieldTypeInferenceResult } from "./types";
 
 interface UseFieldTypeInferenceOptions {
-  debounceMs?: number
+  debounceMs?: number;
 }
 
-export function useFieldTypeInference(options: UseFieldTypeInferenceOptions = {}) {
-  const { debounceMs = 300 } = options
-  const [isInferring, setIsInferring] = useState(false)
-  const [lastResult, setLastResult] = useState<FieldTypeInferenceResult | null>(null)
-  const abortControllerRef = useRef<AbortController | null>(null)
-  const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+export function useFieldTypeInference(
+  options: UseFieldTypeInferenceOptions = {}
+) {
+  const { debounceMs = 300 } = options;
+  const [isInferring, setIsInferring] = useState(false);
+  const [lastResult, setLastResult] = useState<FieldTypeInferenceResult | null>(
+    null
+  );
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const inferFieldType = useCallback(
     async (questionText: string): Promise<FieldTypeInferenceResult | null> => {
       // Cancel any pending request
       if (abortControllerRef.current) {
-        abortControllerRef.current.abort()
+        abortControllerRef.current.abort();
       }
 
       // Clear any pending debounce
       if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current)
+        clearTimeout(debounceTimeoutRef.current);
       }
 
       // Don't infer for very short questions
       if (!questionText || questionText.trim().length < 3) {
-        return null
+        return null;
       }
 
       return new Promise((resolve) => {
         debounceTimeoutRef.current = setTimeout(async () => {
-          setIsInferring(true)
-          abortControllerRef.current = new AbortController()
+          setIsInferring(true);
+          abortControllerRef.current = new AbortController();
 
           try {
-            const response = await fetch('/api/field-type', {
-              method: 'POST',
+            const response = await fetch("/api/field-type", {
+              method: "POST",
               headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
               },
               body: JSON.stringify({ input: questionText.trim() }),
               signal: abortControllerRef.current.signal,
-            })
+            });
 
             if (!response.ok) {
-              throw new Error('Failed to infer field type')
+              throw new Error("Failed to infer field type");
             }
 
-            const data = await response.json()
+            const data = await response.json();
             const result: FieldTypeInferenceResult = {
               fieldType: data.fieldType as FieldType,
-              reasoning: data.reasoning || '',
-            }
+              reasoning: data.reasoning || "",
+            };
 
-            setLastResult(result)
-            resolve(result)
+            setLastResult(result);
+            resolve(result);
           } catch (error) {
-            if ((error as Error).name === 'AbortError') {
-              resolve(null)
-              return
+            if ((error as Error).name === "AbortError") {
+              resolve(null);
+              return;
             }
-            console.error('Field type inference error:', error)
+            console.error("Field type inference error:", error);
             // Return a default on error
-            resolve(null)
+            resolve(null);
           } finally {
-            setIsInferring(false)
+            setIsInferring(false);
           }
-        }, debounceMs)
-      })
+        }, debounceMs);
+      });
     },
     [debounceMs]
-  )
+  );
 
   const cancelInference = useCallback(() => {
     if (abortControllerRef.current) {
-      abortControllerRef.current.abort()
+      abortControllerRef.current.abort();
     }
     if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current)
+      clearTimeout(debounceTimeoutRef.current);
     }
-    setIsInferring(false)
-  }, [])
+    setIsInferring(false);
+  }, []);
 
   return {
     inferFieldType,
     cancelInference,
     isInferring,
     lastResult,
-  }
+  };
 }

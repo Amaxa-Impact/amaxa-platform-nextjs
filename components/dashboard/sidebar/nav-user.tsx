@@ -1,7 +1,15 @@
-'use client';
-import { CheckCircle2, Bell, ChevronDown, CreditCard, LogOut, Star } from 'lucide-react';
-import { useAuth } from '@workos-inc/authkit-nextjs/components';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+"use client";
+import { useAuth } from "@workos-inc/authkit-nextjs/components";
+import {
+  Bell,
+  CheckCircle2,
+  ChevronDown,
+  CreditCard,
+  LogOut,
+  Star,
+} from "lucide-react";
+import { memo } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,9 +18,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar';
-import { memo } from 'react';
+} from "@/components/ui/dropdown-menu";
+import {
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
+} from "@/components/ui/sidebar";
 
 export const NavUser = memo(() => {
   const { user } = useAuth();
@@ -24,11 +36,14 @@ export const NavUser = memo(() => {
         <DropdownMenu>
           <DropdownMenuTrigger>
             <SidebarMenuButton
-              size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              size="lg"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user?.profilePictureUrl ?? ''} alt={user?.firstName ?? ''} />
+                <AvatarImage
+                  alt={user?.firstName ?? ""}
+                  src={user?.profilePictureUrl ?? ""}
+                />
                 <AvatarFallback className="rounded-lg">CN</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
@@ -41,15 +56,18 @@ export const NavUser = memo(() => {
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
-            side={isMobile ? 'bottom' : 'right'}
             align="end"
+            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+            side={isMobile ? "bottom" : "right"}
             sideOffset={4}
           >
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user?.profilePictureUrl ?? ''} alt={user?.firstName ?? ''} />
+                  <AvatarImage
+                    alt={user?.firstName ?? ""}
+                    src={user?.profilePictureUrl ?? ""}
+                  />
                   <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
@@ -94,4 +112,4 @@ export const NavUser = memo(() => {
   );
 });
 
-NavUser.displayName = 'NavUser';
+NavUser.displayName = "NavUser";

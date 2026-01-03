@@ -1,6 +1,24 @@
-"use client"
-import { Button, buttonVariants } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+"use client";
+import { useMutation, useQuery } from "convex/react";
+import { useParams } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -8,99 +26,78 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useState } from 'react';
-import { useParams } from 'next/navigation';
-import { Id } from '@/convex/_generated/dataModel';
-import { useMutation, useQuery } from 'convex/react';
-import { api } from '@/convex/_generated/api';
-import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
-import Link from 'next/link';
+} from "@/components/ui/table";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 
-type ResponseStatus = 'pending' | 'reviewed' | 'accepted' | 'rejected';
+type ResponseStatus = "pending" | "reviewed" | "accepted" | "rejected";
 
 export default function ResponsesPage() {
-  const { formId } = useParams<{ formId: Id<'applicationForms'> }>();
+  const { formId } = useParams<{ formId: Id<"applicationForms"> }>();
   const form = useQuery(api.applicationForms.get, { formId });
   const responses = useQuery(api.applicationResponses.list, { formId });
 
   const [selectedResponseId, setSelectedResponseId] =
-    useState<Id<'applicationResponses'> | null>(null);
-  const [statusFilter, setStatusFilter] = useState<ResponseStatus | 'all'>('all');
+    useState<Id<"applicationResponses"> | null>(null);
+  const [statusFilter, setStatusFilter] = useState<ResponseStatus | "all">(
+    "all"
+  );
 
   if (!form) {
     return <div className="p-6">Form not found</div>;
   }
 
   const filteredResponses =
-    statusFilter === 'all'
+    statusFilter === "all"
       ? responses
       : responses?.filter((r) => r.status === statusFilter);
 
   const statusCounts = {
     all: responses?.length ?? 0,
-    pending: responses?.filter((r) => r.status === 'pending').length ?? 0,
-    reviewed: responses?.filter((r) => r.status === 'reviewed').length ?? 0,
-    accepted: responses?.filter((r) => r.status === 'accepted').length ?? 0,
-    rejected: responses?.filter((r) => r.status === 'rejected').length ?? 0,
+    pending: responses?.filter((r) => r.status === "pending").length ?? 0,
+    reviewed: responses?.filter((r) => r.status === "reviewed").length ?? 0,
+    accepted: responses?.filter((r) => r.status === "accepted").length ?? 0,
+    rejected: responses?.filter((r) => r.status === "rejected").length ?? 0,
   };
 
   return (
-    <div className="flex flex-col h-full">
-     
-
-      <main className="flex-1 p-6 overflow-auto">
-        <div className="max-w-6xl mx-auto space-y-6">
+    <div className="flex h-full flex-col">
+      <main className="flex-1 overflow-auto p-6">
+        <div className="mx-auto max-w-6xl space-y-6">
           {/* Filters */}
           <div className="flex gap-2">
             <Button
-              variant={statusFilter === 'all' ? 'default' : 'outline'}
+              onClick={() => setStatusFilter("all")}
               size="sm"
-              onClick={() => setStatusFilter('all')}
+              variant={statusFilter === "all" ? "default" : "outline"}
             >
               All ({statusCounts.all})
             </Button>
             <Button
-              variant={statusFilter === 'pending' ? 'default' : 'outline'}
+              onClick={() => setStatusFilter("pending")}
               size="sm"
-              onClick={() => setStatusFilter('pending')}
+              variant={statusFilter === "pending" ? "default" : "outline"}
             >
               Pending ({statusCounts.pending})
             </Button>
             <Button
-              variant={statusFilter === 'reviewed' ? 'default' : 'outline'}
+              onClick={() => setStatusFilter("reviewed")}
               size="sm"
-              onClick={() => setStatusFilter('reviewed')}
+              variant={statusFilter === "reviewed" ? "default" : "outline"}
             >
               Reviewed ({statusCounts.reviewed})
             </Button>
             <Button
-              variant={statusFilter === 'accepted' ? 'default' : 'outline'}
+              onClick={() => setStatusFilter("accepted")}
               size="sm"
-              onClick={() => setStatusFilter('accepted')}
+              variant={statusFilter === "accepted" ? "default" : "outline"}
             >
               Accepted ({statusCounts.accepted})
             </Button>
             <Button
-              variant={statusFilter === 'rejected' ? 'default' : 'outline'}
+              onClick={() => setStatusFilter("rejected")}
               size="sm"
-              onClick={() => setStatusFilter('rejected')}
+              variant={statusFilter === "rejected" ? "default" : "outline"}
             >
               Rejected ({statusCounts.rejected})
             </Button>
@@ -111,8 +108,8 @@ export default function ResponsesPage() {
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
                 {responses?.length === 0
-                  ? 'No applications have been submitted yet.'
-                  : 'No applications match the selected filter.'}
+                  ? "No applications have been submitted yet."
+                  : "No applications match the selected filter."}
               </CardContent>
             </Card>
           ) : (
@@ -130,8 +127,8 @@ export default function ResponsesPage() {
                 {filteredResponses?.map((response) => (
                   <ResponseRow
                     key={response._id}
-                    response={response}
                     onView={() => setSelectedResponseId(response._id)}
+                    response={response}
                   />
                 ))}
               </TableBody>
@@ -141,13 +138,13 @@ export default function ResponsesPage() {
 
         {/* Response Detail Dialog */}
         <Dialog
-          open={selectedResponseId !== null}
           onOpenChange={(open) => !open && setSelectedResponseId(null)}
+          open={selectedResponseId !== null}
         >
           {selectedResponseId && (
             <ResponseDetailDialog
-              responseId={selectedResponseId}
               onClose={() => setSelectedResponseId(null)}
+              responseId={selectedResponseId}
             />
           )}
         </Dialog>
@@ -161,7 +158,7 @@ function ResponseRow({
   onView,
 }: {
   response: {
-    _id: Id<'applicationResponses'>;
+    _id: Id<"applicationResponses">;
     applicantName: string;
     applicantEmail: string;
     submittedAt: number;
@@ -178,29 +175,32 @@ function ResponseRow({
         responseId: response._id,
         status: newStatus,
       });
-      toast.success('Status updated');
-    } catch (error) {
-      toast.error('Failed to update status');
+      toast.success("Status updated");
+    } catch (_error) {
+      toast.error("Failed to update status");
     }
   };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this application?')) {
+    if (!confirm("Are you sure you want to delete this application?")) {
       return;
     }
     try {
       await deleteResponse({ responseId: response._id });
-      toast.success('Application deleted');
-    } catch (error) {
-      toast.error('Failed to delete application');
+      toast.success("Application deleted");
+    } catch (_error) {
+      toast.error("Failed to delete application");
     }
   };
 
-  const statusVariants: Record<ResponseStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-    pending: 'secondary',
-    reviewed: 'outline',
-    accepted: 'default',
-    rejected: 'destructive',
+  const statusVariants: Record<
+    ResponseStatus,
+    "default" | "secondary" | "destructive" | "outline"
+  > = {
+    pending: "secondary",
+    reviewed: "outline",
+    accepted: "default",
+    rejected: "destructive",
   };
 
   return (
@@ -208,22 +208,23 @@ function ResponseRow({
       <TableCell className="font-medium">{response.applicantName}</TableCell>
       <TableCell>{response.applicantEmail}</TableCell>
       <TableCell>
-        {new Date(response.submittedAt).toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
+        {new Date(response.submittedAt).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
         })}
       </TableCell>
       <TableCell>
         <Select
-          value={response.status}
           onValueChange={(v) => handleStatusChange(v as ResponseStatus)}
+          value={response.status}
         >
           <SelectTrigger className="w-32">
             <Badge variant={statusVariants[response.status]}>
-              {response.status.charAt(0).toUpperCase() + response.status.slice(1)}
+              {response.status.charAt(0).toUpperCase() +
+                response.status.slice(1)}
             </Badge>
           </SelectTrigger>
           <SelectContent>
@@ -236,14 +237,14 @@ function ResponseRow({
       </TableCell>
       <TableCell>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={onView}>
+          <Button onClick={onView} size="sm" variant="outline">
             View
           </Button>
           <Button
-            variant="ghost"
-            size="sm"
             className="text-destructive"
             onClick={handleDelete}
+            size="sm"
+            variant="ghost"
           >
             Delete
           </Button>
@@ -257,12 +258,10 @@ function ResponseDetailDialog({
   responseId,
   onClose,
 }: {
-  responseId: Id<'applicationResponses'>;
+  responseId: Id<"applicationResponses">;
   onClose: () => void;
 }) {
-  const response = useQuery(
-    api.applicationResponses.get, { responseId }
-  );
+  const response = useQuery(api.applicationResponses.get, { responseId });
   const updateStatus = useMutation(api.applicationResponses.updateStatus);
 
   if (!response) {
@@ -281,31 +280,34 @@ function ResponseDetailDialog({
         responseId: response._id,
         status: newStatus,
       });
-      toast.success('Status updated');
-    } catch (error) {
-      toast.error('Failed to update status');
+      toast.success("Status updated");
+    } catch (_error) {
+      toast.error("Failed to update status");
     }
   };
 
-  const statusVariants: Record<ResponseStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-    pending: 'secondary',
-    reviewed: 'outline',
-    accepted: 'default',
-    rejected: 'destructive',
+  const statusVariants: Record<
+    ResponseStatus,
+    "default" | "secondary" | "destructive" | "outline"
+  > = {
+    pending: "secondary",
+    reviewed: "outline",
+    accepted: "default",
+    rejected: "destructive",
   };
 
   return (
-    <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+    <DialogContent className="max-h-[80vh] max-w-2xl overflow-y-auto">
       <DialogHeader>
         <DialogTitle>Application from {response.applicantName}</DialogTitle>
         <DialogDescription>
-          Submitted on{' '}
-          {new Date(response.submittedAt).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
+          Submitted on{" "}
+          {new Date(response.submittedAt).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
           })}
         </DialogDescription>
       </DialogHeader>
@@ -313,14 +315,15 @@ function ResponseDetailDialog({
       <div className="space-y-6">
         {/* Status */}
         <div className="flex items-center gap-4">
-          <span className="text-sm font-medium">Status:</span>
+          <span className="font-medium text-sm">Status:</span>
           <Select
-            value={response.status}
             onValueChange={(v) => handleStatusChange(v as ResponseStatus)}
+            value={response.status}
           >
             <SelectTrigger className="w-40">
               <Badge variant={statusVariants[response.status]}>
-                {response.status.charAt(0).toUpperCase() + response.status.slice(1)}
+                {response.status.charAt(0).toUpperCase() +
+                  response.status.slice(1)}
               </Badge>
             </SelectTrigger>
             <SelectContent>
@@ -339,15 +342,15 @@ function ResponseDetailDialog({
           </CardHeader>
           <CardContent className="space-y-2">
             <div>
-              <span className="text-sm text-muted-foreground">Name:</span>
+              <span className="text-muted-foreground text-sm">Name:</span>
               <p className="font-medium">{response.applicantName}</p>
             </div>
             <div>
-              <span className="text-sm text-muted-foreground">Email:</span>
+              <span className="text-muted-foreground text-sm">Email:</span>
               <p className="font-medium">
                 <a
-                  href={`mailto:${response.applicantEmail}`}
                   className="text-primary hover:underline"
+                  href={`mailto:${response.applicantEmail}`}
                 >
                   {response.applicantEmail}
                 </a>
@@ -364,8 +367,11 @@ function ResponseDetailDialog({
             </CardHeader>
             <CardContent className="space-y-4">
               {response.fieldResponses.map((fr) => (
-                <div key={fr.fieldId} className="border-b pb-4 last:border-0 last:pb-0">
-                  <span className="text-sm text-muted-foreground">
+                <div
+                  className="border-b pb-4 last:border-0 last:pb-0"
+                  key={fr.fieldId}
+                >
+                  <span className="text-muted-foreground text-sm">
                     {fr.fieldLabel}
                   </span>
                   <div className="mt-1">
@@ -390,4 +396,3 @@ function ResponseDetailDialog({
     </DialogContent>
   );
 }
-

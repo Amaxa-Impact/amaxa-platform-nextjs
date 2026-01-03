@@ -1,8 +1,19 @@
-'use client';
-import { Pie, PieChart, Label } from 'recharts';
+"use client";
+import { Label, Pie, PieChart } from "recharts";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  type ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 
 interface StatusCounts {
   todo: number;
@@ -20,40 +31,45 @@ interface TaskStatusChartProps {
 
 const chartConfig: ChartConfig = {
   count: {
-    label: 'Tasks',
+    label: "Tasks",
   },
   todo: {
-    label: 'To Do',
-    color: 'var(--chart-1)',
+    label: "To Do",
+    color: "var(--chart-1)",
   },
   in_progress: {
-    label: 'In Progress',
-    color: 'var(--chart-2)',
+    label: "In Progress",
+    color: "var(--chart-2)",
   },
   completed: {
-    label: 'Completed',
-    color: 'var(--chart-3)',
+    label: "Completed",
+    color: "var(--chart-3)",
   },
   blocked: {
-    label: 'Blocked',
-    color: 'var(--chart-4)',
+    label: "Blocked",
+    color: "var(--chart-4)",
   },
 };
 
-export function TaskStatusChart({ title, description, data, total }: TaskStatusChartProps) {
+export function TaskStatusChart({
+  title,
+  description,
+  data,
+  total,
+}: TaskStatusChartProps) {
   const chartData = [
-    { status: 'todo', count: data?.todo, fill: 'var(--color-todo)' },
+    { status: "todo", count: data?.todo, fill: "var(--color-todo)" },
     {
-      status: 'in_progress',
+      status: "in_progress",
       count: data?.in_progress,
-      fill: 'var(--color-in_progress)',
+      fill: "var(--color-in_progress)",
     },
     {
-      status: 'completed',
+      status: "completed",
       count: data?.completed,
-      fill: 'var(--color-completed)',
+      fill: "var(--color-completed)",
     },
-    { status: 'blocked', count: data?.blocked, fill: 'var(--color-blocked)' },
+    { status: "blocked", count: data?.blocked, fill: "var(--color-blocked)" },
   ].filter((d) => d?.count && d.count > 0);
 
   return (
@@ -68,19 +84,44 @@ export function TaskStatusChart({ title, description, data, total }: TaskStatusC
             <p className="text-muted-foreground text-sm">No tasks</p>
           </div>
         ) : (
-          <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[250px]">
+          <ChartContainer
+            className="mx-auto aspect-square max-h-[250px]"
+            config={chartConfig}
+          >
             <PieChart>
-              <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-              <Pie data={chartData} dataKey="count" nameKey="status" innerRadius={60} strokeWidth={5}>
+              <ChartTooltip
+                content={<ChartTooltipContent hideLabel />}
+                cursor={false}
+              />
+              <Pie
+                data={chartData}
+                dataKey="count"
+                innerRadius={60}
+                nameKey="status"
+                strokeWidth={5}
+              >
                 <Label
                   content={({ viewBox }) => {
-                    if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
+                    if (viewBox && "cx" in viewBox && "cy" in viewBox) {
                       return (
-                        <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle">
-                          <tspan x={viewBox.cx} y={viewBox.cy} className="fill-foreground text-3xl font-bold">
+                        <text
+                          dominantBaseline="middle"
+                          textAnchor="middle"
+                          x={viewBox.cx}
+                          y={viewBox.cy}
+                        >
+                          <tspan
+                            className="fill-foreground font-bold text-3xl"
+                            x={viewBox.cx}
+                            y={viewBox.cy}
+                          >
                             {total}
                           </tspan>
-                          <tspan x={viewBox.cx} y={(viewBox.cy || 0) + 24} className="fill-muted-foreground">
+                          <tspan
+                            className="fill-muted-foreground"
+                            x={viewBox.cx}
+                            y={(viewBox.cy || 0) + 24}
+                          >
                             Tasks
                           </tspan>
                         </text>
