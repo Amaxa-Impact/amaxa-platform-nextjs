@@ -43,6 +43,15 @@ export const listUsersForProject = query({
   args: {
     projectId: v.id("projects"),
   },
+  returns: v.array(
+    v.object({
+      _id: v.id("userToProject"),
+      _creationTime: v.number(),
+      userId: v.string(),
+      projectId: v.id("projects"),
+      role: v.union(v.literal("coach"), v.literal("member")),
+    })
+  ),
   handler: async (ctx, args) => {
     return await ctx.db
       .query("userToProject")

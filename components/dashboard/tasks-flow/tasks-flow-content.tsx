@@ -21,13 +21,14 @@ import type { TaskNodeData } from "@/components/dashboard/sidebar/TaskNode";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import usePresence from "@/hooks/use-presence";
+import type { User } from "@/lib/workos";
 import { TasksContextMenu } from "./tasks-context-menu";
 import { TasksGraph } from "./tasks-graph";
 import { TasksHeader } from "./tasks-header";
 import type { ContextMenuState, CursorPresenceData } from "./types";
 import { getStableUserId, getUserColor } from "./utils";
 
-export function TasksFlowContent() {
+export function TasksFlowContent({ allUsers }: { allUsers: User }) {
   const { projectId } = useParams<{ projectId: Id<"projects"> }>();
   const { userRole } = useDashboardContext();
   const { isAuthenticated } = useConvexAuth();
@@ -47,6 +48,9 @@ export function TasksFlowContent() {
   const project = useQuery(api.projects.get, { projectId });
   const convexNodes = useQuery(api.tasks.listForProject, { projectId });
   const convexEdges = useQuery(api.edges.listForProject, { projectId });
+  const projectMembers = useQuery(api.userToProjects.listUsersForProject, {
+    projectId,
+  });
 
   const createTask = useMutation(api.tasks.create);
   const updatePosition = useMutation(api.tasks.updatePosition);
@@ -282,9 +286,18 @@ export function TasksFlowContent() {
             handleStatusChange(n.id, status),
           onDataChange: (data: Partial<TaskNodeData>) =>
             handleDataChange(n.id, data),
+          projectMembers: projectMembers?.map((member) => {
+            // Extract WorkOS user ID from the tokenIdentifier format "user|workos_id"
+            const workosId = member.userId.split("|")[1];
+            const workosUser = allUsers.find((u) => u.id === workosId);
+            return {
+              userId: member.userId,
+              name: workosUser?.email || workosUser?.firstName || member.userId,
+            };
+          }),
         },
       })),
-    [nodes, handleStatusChange, handleDataChange]
+    [nodes, handleStatusChange, handleDataChange, projectMembers, allUsers]
   );
 
   const layoutStyle = useMemo(

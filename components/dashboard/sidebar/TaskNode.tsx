@@ -277,40 +277,51 @@ export const TaskNode = memo(({ data, id }: NodeProps) => {
                 />
 
                 <form.Field
-                  children={(field) => (
-                    <Field className="flex-1">
-                      <FieldLabel htmlFor={`task-${id}-assignedTo`}>
-                        Assigned To
-                      </FieldLabel>
-                      <FieldContent>
-                        <Select
-                          onValueChange={(value) => field.handleChange(value)}
-                          value={field.state.value}
-                        >
-                          <SelectTrigger
-                            className="w-full"
-                            id={`task-${id}-assignedTo`}
+                  children={(field) => {
+                    const selectedMember = taskData.projectMembers?.find(
+                      (m) => m.userId === field.state.value
+                    );
+                    const displayName = field.state.value
+                      ? selectedMember?.name || field.state.value
+                      : "Unassigned";
+
+                    return (
+                      <Field className="flex-1">
+                        <FieldLabel htmlFor={`task-${id}-assignedTo`}>
+                          Assigned To
+                        </FieldLabel>
+                        <FieldContent>
+                          <Select
+                            onValueChange={(value) =>
+                              field.handleChange(value ?? "")
+                            }
+                            value={field.state.value}
                           >
-                            <SelectValue placeholder="Select user..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="">Unassigned</SelectItem>
-                            {taskData.projectMembers?.map((member) => (
-                              <SelectItem
-                                key={member.userId}
-                                value={member.userId}
-                              >
-                                {member.name || member.userId}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        {field.state.meta.errors && (
-                          <FieldError errors={field.state.meta.errors} />
-                        )}
-                      </FieldContent>
-                    </Field>
-                  )}
+                            <SelectTrigger
+                              className="w-full"
+                              id={`task-${id}-assignedTo`}
+                            >
+                              <SelectValue>{displayName}</SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="">Unassigned</SelectItem>
+                              {taskData.projectMembers?.map((member) => (
+                                <SelectItem
+                                  key={member.userId}
+                                  value={member.userId}
+                                >
+                                  {member.name || member.userId}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {field.state.meta.errors && (
+                            <FieldError errors={field.state.meta.errors} />
+                          )}
+                        </FieldContent>
+                      </Field>
+                    );
+                  }}
                   name="assignedTo"
                 />
               </div>
@@ -357,7 +368,7 @@ export const TaskNode = memo(({ data, id }: NodeProps) => {
 
         <div className="nodrag nopan flex items-center gap-2">
           <Select onValueChange={handleStatusChange} value={status}>
-            <SelectTrigger className="h-6 w-auto text-xs" size="sm">
+            <SelectTrigger className="h-6 w-full text-xs" size="sm">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
