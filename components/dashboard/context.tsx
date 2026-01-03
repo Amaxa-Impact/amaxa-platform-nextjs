@@ -35,7 +35,7 @@ export const DashboardProvider = ({
   projectId: Id<"projects">;
 }) => {
   const project = useQuery(api.projects.get, { projectId });
-  const userRole = useQuery(api.userToProject.getUserRole, { projectId });
+  const userRole = useQuery(api.userToProjects.getUserRole, { projectId });
 
   const contextValue = useMemo(
     () => ({
