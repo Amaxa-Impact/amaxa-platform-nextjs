@@ -22,12 +22,12 @@ export function UsersPageContent({ allUsers }: { allUsers: User }) {
   const { userRole } = useDashboardContext();
   const isCoach = userRole === "coach";
 
-  const existingUsers = useQuery(api.userToProject.listUsersForProject, {
+  const existingUsers = useQuery(api.userToProjects.listUsersForProject, {
     projectId,
   });
 
-  const removeUser = useMutation(api.userToProject.remove);
-  const updateRole = useMutation(api.userToProject.updateRole);
+  const removeUser = useMutation(api.userToProjects.remove);
+  const updateRole = useMutation(api.userToProjects.updateRole);
 
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
 

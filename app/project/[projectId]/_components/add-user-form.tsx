@@ -55,7 +55,7 @@ export function AddUserForm({
   onOpenChange: (open: boolean) => void;
   existingUserIds?: string[];
 }) {
-  const assignUser = useMutation(api.userToProject.assign);
+  const assignUser = useMutation(api.userToProjects.assign);
 
   const availableUsers = React.useMemo(() => {
     return allUsers
