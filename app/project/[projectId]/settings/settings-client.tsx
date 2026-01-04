@@ -35,7 +35,11 @@ export default function SettingsPageClient() {
 
   const handleSave = async () => {
     if (!isCoach) {
-      alert("Only coaches can edit project settings");
+      alertDialog({
+        title: "Access Denied",
+        description: "Only coaches can edit project settings",
+        variant: "default",
+      });
       return;
     }
 
@@ -46,11 +50,17 @@ export default function SettingsPageClient() {
         name: name.trim(),
         description: description.trim(),
       });
-      alert("Project settings saved successfully!");
+      alertDialog({
+        title: "Success",
+        description: "Project settings saved successfully!",
+        variant: "default",
+      });
     } catch (error) {
-      alert(
-        `Failed to save: ${error instanceof Error ? error.message : "Unknown error"}`
-      );
+      alertDialog({
+        title: "Error",
+        description: `Failed to save: ${error instanceof Error ? error.message : "Unknown error"}`,
+        variant: "destructive",
+      });
     } finally {
       setIsSaving(false);
     }

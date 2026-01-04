@@ -26,7 +26,6 @@ export const Cursor = memo(function Cursor({
         transition: "left 0.1s ease-out, top 0.1s ease-out",
       }}
     >
-      {/* Cursor SVG */}
       <svg
         aria-labelledby="cursorSvgTitle"
         fill="none"
@@ -45,7 +44,6 @@ export const Cursor = memo(function Cursor({
         />
       </svg>
 
-      {/* Name label */}
       {name && (
         <div
           style={{

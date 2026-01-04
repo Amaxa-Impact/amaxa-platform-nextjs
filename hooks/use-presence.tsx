@@ -45,9 +45,7 @@ export const usePresence = <T extends Record<string, unknown>>(
   useEffect(() => {
     updatePresenceMutation({ room, user, data: initialData });
 
-    return () => {
-      // do nothing
-    };
+    return () => {};
   }, [room, user, initialData, updatePresenceMutation]);
 
   useEffect(() => {

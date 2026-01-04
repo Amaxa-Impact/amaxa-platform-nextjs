@@ -146,6 +146,31 @@ export default defineSchema({
     value: v.union(v.string(), v.array(v.string())),
   }).index("by_response", ["responseId"]),
 
+  interviewTimeSlots: defineTable({
+    formId: v.id("applicationForms"),
+    startTime: v.number(),
+    timezone: v.string(),
+    assignedAdminId: v.optional(v.string()),
+    isBooked: v.boolean(),
+    bookedByResponseId: v.optional(v.id("applicationResponses")),
+    createdBy: v.string(),
+    createdAt: v.number(),
+  })
+    .index("by_form", ["formId"])
+    .index("by_form_and_booked", ["formId", "isBooked"])
+    .index("by_booked_response", ["bookedByResponseId"]),
+
+  schedulingTokens: defineTable({
+    responseId: v.id("applicationResponses"),
+    formId: v.id("applicationForms"),
+    token: v.string(),
+    expiresAt: v.optional(v.number()),
+    emailSentAt: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index("by_token", ["token"])
+    .index("by_response", ["responseId"]),
+
   presence: defineTable({
     room: v.string(),
     user: v.string(),

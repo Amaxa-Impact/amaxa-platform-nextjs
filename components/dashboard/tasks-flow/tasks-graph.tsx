@@ -60,8 +60,6 @@ const TasksGraphInner = memo(function TasksGraphInner({
 }: TasksGraphProps) {
   const reactFlowInstance = useReactFlow();
 
-  // Notify parent when flow instance is ready
-  // Only run once when reactFlowInstance becomes available
   // biome-ignore lint/correctness/useExhaustiveDependencies: Only run once when reactFlowInstance becomes available
   useEffect(() => {
     if (onFlowInstanceReady && reactFlowInstance) {

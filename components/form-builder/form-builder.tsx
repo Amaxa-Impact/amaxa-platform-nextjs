@@ -75,7 +75,6 @@ export function FormBuilder({ formId, fields }: FormBuilderProps) {
     [formId, createField]
   );
 
-  // Simple drag and drop handlers (can be enhanced with a library like dnd-kit)
   const handleDragStart = useCallback(
     (e: React.DragEvent, fieldId: Id<"applicationFormFields">) => {
       e.dataTransfer.setData("fieldId", fieldId);
@@ -107,7 +106,6 @@ export function FormBuilder({ formId, fields }: FormBuilderProps) {
         return;
       }
 
-      // Calculate new order
       const newFieldIds = [...(fields?.map((f) => f._id) ?? [])];
       newFieldIds.splice(sourceIndex ?? 0, 1);
       newFieldIds.splice(targetIndex ?? 0, 0, sourceFieldId);

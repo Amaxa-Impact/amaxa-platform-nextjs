@@ -105,7 +105,6 @@ export function ApplyForm({ form, fields }: ApplyFormProps) {
             tanstackForm.handleSubmit();
           }}
         >
-          {/* Applicant Info Section */}
           <div className="space-y-4 rounded-lg border bg-muted/30 p-4">
             <h3 className="font-medium text-muted-foreground text-sm">
               Your Information

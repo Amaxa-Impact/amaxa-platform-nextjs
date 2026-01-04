@@ -143,7 +143,6 @@ export function TasksTable({ projectId, allUsers }: TasksTableProps) {
         <CardTitle>Tasks</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Filters */}
         <div className="flex flex-wrap gap-3">
           <Input
             className="w-[200px]"
@@ -215,7 +214,6 @@ export function TasksTable({ projectId, allUsers }: TasksTableProps) {
           )}
         </div>
 
-        {/* Table */}
         <Table>
           <TableHeader>
             <TableRow>
@@ -265,7 +263,6 @@ export function TasksTable({ projectId, allUsers }: TasksTableProps) {
           </TableBody>
         </Table>
 
-        {/* Load More / Pagination */}
         {!isLoading && results.length > 0 && (
           <div className="flex items-center justify-between">
             <p className="text-muted-foreground text-sm">

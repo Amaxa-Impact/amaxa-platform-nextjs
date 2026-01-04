@@ -3,7 +3,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function Loading() {
   return (
     <div className="flex h-screen flex-col">
-      {/* Header Skeleton */}
       <div className="flex items-center justify-between border-b bg-background px-6 py-4">
         <Skeleton className="h-8 w-48" />
         <div className="flex items-center gap-4">
@@ -19,7 +18,6 @@ export default function Loading() {
         </div>
       </div>
 
-      {/* Flow Canvas Skeleton */}
       <div className="relative flex-1 bg-muted/20">
         <Skeleton className="h-full w-full" />
       </div>

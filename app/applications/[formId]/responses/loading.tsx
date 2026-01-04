@@ -13,14 +13,12 @@ export default function Loading() {
     <div className="flex h-full flex-col">
       <main className="flex-1 overflow-auto p-6">
         <div className="mx-auto max-w-6xl space-y-6">
-          {/* Filters Skeleton */}
           <div className="flex gap-2">
             {[1, 2, 3, 4, 5].map((i) => (
               <Skeleton className="h-9 w-24" key={i} />
             ))}
           </div>
 
-          {/* Table Skeleton */}
           <Table>
             <TableHeader>
               <TableRow>

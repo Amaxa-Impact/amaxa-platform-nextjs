@@ -90,7 +90,6 @@ export const TaskNode = memo(({ data, id }: NodeProps) => {
     },
   });
 
-  // Reset form when taskData changes or when entering edit mode
   useEffect(() => {
     if (isEditing) {
       form.setFieldValue("label", taskData.label);

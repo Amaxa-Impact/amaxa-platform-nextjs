@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { api } from "./_generated/api";
 import { mutation, query } from "./_generated/server";
 import { requireSiteAdmin } from "./permissions";
 
@@ -166,12 +167,28 @@ export const get = query({
   },
 });
 
+function generateToken(): string {
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let token = "";
+  for (let i = 0; i < 32; i++) {
+    token += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return token;
+}
+
 export const updateStatus = mutation({
   args: {
     responseId: v.id("applicationResponses"),
     status: statusValidator,
+    sendSchedulingEmail: v.optional(v.boolean()),
+    sendRejectionEmail: v.optional(v.boolean()),
   },
-  returns: v.null(),
+  returns: v.object({
+    success: v.boolean(),
+    schedulingToken: v.optional(v.string()),
+    emailSent: v.optional(v.boolean()),
+  }),
   handler: async (ctx, args) => {
     await requireSiteAdmin(ctx);
 
@@ -180,8 +197,71 @@ export const updateStatus = mutation({
       throw new Error("Response not found");
     }
 
+    const wasAlreadyAccepted = response.status === "accepted";
+    const wasAlreadyRejected = response.status === "rejected";
     await ctx.db.patch(args.responseId, { status: args.status });
-    return null;
+
+    if (args.status === "accepted" && !wasAlreadyAccepted) {
+      const existingToken = await ctx.db
+        .query("schedulingTokens")
+        .withIndex("by_response", (q) => q.eq("responseId", args.responseId))
+        .unique();
+
+      let token: string;
+      let tokenId;
+
+      if (existingToken) {
+        token = existingToken.token;
+        tokenId = existingToken._id;
+      } else {
+        token = generateToken();
+        tokenId = await ctx.db.insert("schedulingTokens", {
+          responseId: args.responseId,
+          formId: response.formId,
+          token,
+          createdAt: Date.now(),
+        });
+      }
+
+      if (args.sendSchedulingEmail !== false) {
+        const form = await ctx.db.get(response.formId);
+        const baseUrl =
+          process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+        const schedulingUrl = `${baseUrl}/schedule/${token}`;
+
+        await ctx.scheduler.runAfter(
+          0,
+          api.schedulingEmail.sendSchedulingEmail,
+          {
+            to: response.applicantEmail,
+            applicantName: response.applicantName,
+            formTitle: form?.title ?? "Application",
+            schedulingUrl,
+            tokenId,
+          }
+        );
+      }
+
+      return { success: true, schedulingToken: token, emailSent: true };
+    }
+
+    if (
+      args.status === "rejected" &&
+      !wasAlreadyRejected &&
+      args.sendRejectionEmail
+    ) {
+      const form = await ctx.db.get(response.formId);
+
+      await ctx.scheduler.runAfter(0, api.schedulingEmail.sendRejectionEmail, {
+        to: response.applicantEmail,
+        applicantName: response.applicantName,
+        formTitle: form?.title ?? "Application",
+      });
+
+      return { success: true, emailSent: true };
+    }
+
+    return { success: true };
   },
 });
 

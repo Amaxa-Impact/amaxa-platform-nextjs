@@ -34,19 +34,23 @@ export function UsersPageContent({ allUsers }: { allUsers: User }) {
   const existingUserIds = existingUsers?.map((user) => user.userId);
 
   const handleRemoveUser = async (userId: string) => {
-    if (
-      // biome-ignore lint/suspicious/noAlert: <explanation>
-      !confirm("Are you sure you want to remove this user from the project?")
-    ) {
-      return;
-    }
-    try {
-      await removeUser({ userId, projectId });
-    } catch (error) {
-      toast.error(
-        `Failed to remove user: ${error instanceof Error ? error.message : "Unknown error"}`
-      );
-    }
+    confirmDialog({
+      title: "Remove User",
+      description:
+        "Are you sure you want to remove this user from the project?",
+      confirmText: "Remove",
+      cancelText: "Cancel",
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          await removeUser({ userId, projectId });
+        } catch (error) {
+          toast.error(
+            `Failed to remove user: ${error instanceof Error ? error.message : "Unknown error"}`
+          );
+        }
+      },
+    });
   };
 
   const handleUpdateRole = async (userId: string, role: "coach" | "member") => {

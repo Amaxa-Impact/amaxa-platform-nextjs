@@ -24,7 +24,6 @@ export function HomePage({
         <p className="text-muted-foreground">Project Dashboard</p>
       </div>
 
-      {/* Charts Section */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <TaskStatusChart
           data={statusCounts?.allTasks}
@@ -40,7 +39,6 @@ export function HomePage({
         />
       </div>
 
-      {/* Tasks Table */}
       <TasksTable allUsers={allUsers} projectId={project.id} />
     </div>
   );

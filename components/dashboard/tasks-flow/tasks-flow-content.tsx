@@ -88,7 +88,6 @@ export function TasksFlowContent({ allUsers }: { allUsers: User }) {
 
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
 
-  // Track viewport changes to trigger cursor position updates on pan/zoom
   const [_viewport, setViewport] = useState<Viewport>({ x: 0, y: 0, zoom: 1 });
   useOnViewportChange({
     onChange: setViewport,
@@ -184,7 +183,6 @@ export function TasksFlowContent({ allUsers }: { allUsers: User }) {
       let pos: { x: number; y: number };
 
       if (position) {
-        // Context menu position is in screen coords relative to wrapper, convert to flow
         if (reactFlowWrapper.current && flowInstance) {
           const rect = reactFlowWrapper.current.getBoundingClientRect();
           pos = flowInstance.screenToFlowPosition({
@@ -285,7 +283,6 @@ export function TasksFlowContent({ allUsers }: { allUsers: User }) {
           onDataChange: (data: Partial<TaskNodeData>) =>
             handleDataChange(n.id, data),
           projectMembers: projectMembers?.map((member) => {
-            // Extract WorkOS user ID from the tokenIdentifier format "user|workos_id"
             const workosId = member.userId.split("|")[1];
             const workosUser = allUsers.find((u) => u.id === workosId);
             return {
@@ -308,9 +305,6 @@ export function TasksFlowContent({ allUsers }: { allUsers: User }) {
     []
   );
 
-  // Function to render cursors - converts flow coordinates to screen coordinates
-  // This properly handles different zoom levels between users
-  // Viewport state triggers re-render when user zooms/pans
   const getCursorScreenPosition = (flowX: number, flowY: number) => {
     if (!(reactFlowWrapper.current && flowInstance)) {
       return { x: 0, y: 0 };

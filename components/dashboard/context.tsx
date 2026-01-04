@@ -69,7 +69,6 @@ export const DashboardProvider = ({
           <Skeleton className="h-5 w-40" />
         </div>
 
-        {/* Charts Section */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {[1, 2].map((i) => (
             <Card className="flex flex-col" key={i}>
@@ -90,7 +89,6 @@ export const DashboardProvider = ({
           ))}
         </div>
 
-        {/* Tasks Table Skeleton */}
         <Card>
           <CardHeader>
             <CardTitle>

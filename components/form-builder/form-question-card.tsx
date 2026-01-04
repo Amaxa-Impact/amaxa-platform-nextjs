@@ -52,7 +52,6 @@ export function FormQuestionCard({
     },
   });
 
-  // Auto-save with debounce
   const saveField = useCallback(
     async (values: QuestionFormValues) => {
       setIsSaving(true);
@@ -91,7 +90,6 @@ export function FormQuestionCard({
     [saveField]
   );
 
-  // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
       if (saveTimeoutRef.current) {
@@ -100,14 +98,12 @@ export function FormQuestionCard({
     };
   }, []);
 
-  // Handle label blur - infer field type
   const handleLabelBlur = useCallback(async () => {
     const label = form.getFieldValue("label");
     if (label && label.length > 3) {
       const result = await inferFieldType(label);
       if (result) {
         form.setFieldValue("type", result.fieldType);
-        // Auto-save after type inference
         debouncedSave({
           ...form.state.values,
           type: result.fieldType,
@@ -116,7 +112,6 @@ export function FormQuestionCard({
     }
   }, [form, inferFieldType, debouncedSave]);
 
-  // Focus label input when activated
   useEffect(() => {
     if (isActive && labelInputRef.current) {
       labelInputRef.current.focus();
@@ -139,7 +134,6 @@ export function FormQuestionCard({
       )}
       onClick={onActivate}
     >
-      {/* Drag Handle */}
       <div
         {...dragHandleProps}
         className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 cursor-grab opacity-0 transition-opacity group-hover:opacity-100"
@@ -147,7 +141,6 @@ export function FormQuestionCard({
         <IconGripVertical className="h-5 w-5 text-muted-foreground" />
       </div>
 
-      {/* Saving Indicator */}
       {isSaving && (
         <div className="absolute top-2 right-2 text-muted-foreground text-xs">
           Saving...
@@ -155,7 +148,6 @@ export function FormQuestionCard({
       )}
 
       <div className="space-y-4 p-4">
-        {/* Question Label and Type Selector Row */}
         <div className="flex gap-4">
           <div className="flex-1">
             <form.Field
@@ -211,7 +203,6 @@ export function FormQuestionCard({
           />
         </div>
 
-        {/* Description (shown when active) */}
         {isActive && (
           <form.Field
             children={(fieldApi) => (
@@ -237,7 +228,6 @@ export function FormQuestionCard({
           />
         )}
 
-        {/* Options for select/multiselect */}
         {showOptions && (
           <form.Field
             children={(fieldApi) => (
@@ -258,7 +248,6 @@ export function FormQuestionCard({
           />
         )}
 
-        {/* Number config */}
         {showNumberConfig && isActive && (
           <div className="flex gap-4">
             <form.Field
@@ -316,7 +305,6 @@ export function FormQuestionCard({
           </div>
         )}
 
-        {/* Footer: Required toggle and actions */}
         <div className="flex items-center justify-between border-t pt-2">
           <form.Field
             children={(fieldApi) => (

@@ -18,17 +18,14 @@ export function useFieldTypeInference(
 
   const inferFieldType = useCallback(
     async (questionText: string): Promise<FieldTypeInferenceResult | null> => {
-      // Cancel any pending request
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
 
-      // Clear any pending debounce
       if (debounceTimeoutRef.current) {
         clearTimeout(debounceTimeoutRef.current);
       }
 
-      // Don't infer for very short questions
       if (!questionText || questionText.trim().length < 3) {
         return null;
       }
@@ -66,7 +63,6 @@ export function useFieldTypeInference(
               return;
             }
             console.error("Field type inference error:", error);
-            // Return a default on error
             resolve(null);
           } finally {
             setIsInferring(false);

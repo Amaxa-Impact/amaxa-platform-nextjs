@@ -24,7 +24,6 @@ export function FormQuestionOptions({
   const addOption = useCallback(() => {
     const newOptions = [...options, `Option ${options.length + 1}`];
     onOptionsChange(newOptions);
-    // Focus the new option after render
     setTimeout(() => {
       const newIndex = newOptions.length - 1;
       setEditingIndex(newIndex);
@@ -60,7 +59,6 @@ export function FormQuestionOptions({
         if (index === options.length - 1) {
           addOption();
         } else {
-          // Move to next option
           setEditingIndex(index + 1);
           inputRefs.current[index + 1]?.focus();
         }
@@ -71,7 +69,6 @@ export function FormQuestionOptions({
       ) {
         e.preventDefault();
         removeOption(index);
-        // Focus previous option
         const prevIndex = Math.max(0, index - 1);
         setEditingIndex(prevIndex);
         setTimeout(() => {
@@ -82,7 +79,6 @@ export function FormQuestionOptions({
     [options, addOption, removeOption]
   );
 
-  // Initialize with at least one option
   useEffect(() => {
     if (options.length === 0) {
       onOptionsChange(["Option 1"]);

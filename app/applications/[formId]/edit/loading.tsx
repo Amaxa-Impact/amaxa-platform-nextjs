@@ -6,7 +6,6 @@ export default function Loading() {
     <div className="flex h-screen flex-col">
       <main className="flex-1 overflow-auto bg-background">
         <div className="mx-auto max-w-3xl space-y-4 px-4 py-6">
-          {/* Form Header Skeleton */}
           <Card className="border-t-4 border-t-primary/50">
             <CardContent className="space-y-4 pt-6">
               <Skeleton className="h-8 w-64" />
@@ -14,7 +13,6 @@ export default function Loading() {
             </CardContent>
           </Card>
 
-          {/* Form Builder Skeleton */}
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
               <Card key={i}>
@@ -32,7 +30,6 @@ export default function Loading() {
             ))}
           </div>
 
-          {/* Add Question Button Skeleton */}
           <div className="flex justify-center">
             <Skeleton className="h-10 w-40" />
           </div>
