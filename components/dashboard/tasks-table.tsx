@@ -22,6 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { getUserDisplayName } from "@/components/ui/user-dropdown";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 
@@ -121,7 +122,7 @@ export function TasksTable({ projectId, allUsers }: TasksTableProps) {
   const userMap = useMemo(() => {
     const map = new Map<string, string>();
     for (const user of allUsers) {
-      map.set(`workos|${user.id}`, user.email ?? user.id);
+      map.set(user.id, getUserDisplayName(user));
     }
     return map;
   }, [allUsers]);
@@ -192,7 +193,7 @@ export function TasksTable({ projectId, allUsers }: TasksTableProps) {
               <SelectItem value="all">All Users</SelectItem>
               {projectUsers?.map((user) => (
                 <SelectItem key={user.userId} value={user.userId}>
-                  {userMap.get(user.userId) ?? user.userId.split("|")[1]}
+                  {userMap.get(user.userId) ?? user.userId}
                 </SelectItem>
               ))}
             </SelectContent>

@@ -12,6 +12,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  getUserDisplayName,
+  type UserOption,
+} from "@/components/ui/user-dropdown";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import type { User } from "@/lib/workos";
@@ -112,10 +116,14 @@ export function UsersPageContent({ allUsers }: { allUsers: User }) {
                 >
                   <div>
                     <p className="font-medium">
-                      {
-                        allUsers.find((u) => u.id === user.userId.split("|")[1])
-                          ?.email
-                      }
+                      {(() => {
+                        const workosUser = allUsers.find(
+                          (u) => u.id === user.userId
+                        );
+                        return workosUser
+                          ? getUserDisplayName(workosUser as UserOption)
+                          : user.userId;
+                      })()}
                     </p>
                     <p className="text-muted-foreground text-sm">
                       Role: <span className="capitalize">{user.role}</span>

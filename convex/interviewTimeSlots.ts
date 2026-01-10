@@ -17,6 +17,8 @@ export const listSiteAdmins = query({
 
     const siteUsers = await ctx.db.query("siteUser").collect();
 
+    console.log(siteUsers);
+
     return siteUsers
       .filter((user) => user.role === "admin")
       .map((user) => ({

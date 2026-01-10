@@ -1,6 +1,6 @@
 "use client";
 
-import { IconEdit, IconTrash } from "@tabler/icons-react";
+import { IconEdit, IconTrash, IconCheck, IconClock, IconCalendarPlus } from "@tabler/icons-react";
 import { useMutation, useQuery } from "convex/react";
 import { format } from "date-fns";
 import { useEffect, useState } from "react";
@@ -25,6 +25,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  getUserDisplayName,
+  type UserOption,
+} from "@/components/ui/user-dropdown";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import type { User } from "@/lib/workos";
@@ -56,7 +60,8 @@ export function TimeSlotList({ formId, onEdit }: TimeSlotListProps) {
         const response = await fetch("/api/users");
         if (response.ok) {
           const data = await response.json();
-          setAllUsers(data.users || []);
+          // API returns array directly, not { users: [...] }
+          setAllUsers(Array.isArray(data) ? data : []);
         }
       } catch (error) {
         console.error("Failed to fetch users:", error);
@@ -69,9 +74,8 @@ export function TimeSlotList({ formId, onEdit }: TimeSlotListProps) {
     if (!adminId) {
       return "—";
     }
-    const workosUserId = adminId.split("|")[1];
-    const user = allUsers.find((u) => u.id === workosUserId);
-    return user?.email || user?.firstName || adminId;
+    const user = allUsers.find((u) => u.id === adminId);
+    return user ? getUserDisplayName(user as UserOption) : adminId;
   };
 
   const handleDelete = async () => {
@@ -104,9 +108,13 @@ export function TimeSlotList({ formId, onEdit }: TimeSlotListProps) {
 
   if (slots.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed p-8 text-center">
-        <p className="text-muted-foreground text-sm">
-          No time slots created yet. Add your first slot to get started.
+      <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-12 text-center">
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+          <IconCalendarPlus className="h-6 w-6 text-muted-foreground" />
+        </div>
+        <h3 className="mb-1 font-medium">No time slots yet</h3>
+        <p className="mb-4 text-muted-foreground text-sm">
+          Add your first interview slot to get started.
         </p>
       </div>
     );
@@ -129,14 +137,23 @@ export function TimeSlotList({ formId, onEdit }: TimeSlotListProps) {
             {slots.map((slot) => (
               <TableRow key={slot._id}>
                 <TableCell>
-                  <div className="flex flex-col">
-                    <span className="font-medium">
-                      {format(new Date(slot.startTime), "MMM d, yyyy")}
-                    </span>
-                    <span className="text-muted-foreground text-xs">
-                      {format(new Date(slot.startTime), "h:mm a")} -{" "}
-                      {format(new Date(slot.endTime), "h:mm a")}
-                    </span>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 flex-col items-center justify-center rounded-lg bg-muted">
+                      <span className="text-[10px] font-medium uppercase text-muted-foreground">
+                        {format(new Date(slot.startTime), "MMM")}
+                      </span>
+                      <span className="font-bold text-sm leading-none">
+                        {format(new Date(slot.startTime), "d")}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="font-medium">
+                        {format(new Date(slot.startTime), "EEEE")}
+                      </span>
+                      <span className="block text-muted-foreground text-xs">
+                        {format(new Date(slot.startTime), "h:mm a")} - {format(new Date(slot.endTime), "h:mm a")}
+                      </span>
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell>
@@ -151,9 +168,15 @@ export function TimeSlotList({ formId, onEdit }: TimeSlotListProps) {
                 </TableCell>
                 <TableCell>
                   {slot.isBooked ? (
-                    <Badge variant="secondary">Booked</Badge>
+                    <Badge className="gap-1.5" variant="secondary">
+                      <IconCheck className="h-3 w-3" />
+                      Booked
+                    </Badge>
                   ) : (
-                    <Badge variant="outline">Available</Badge>
+                    <Badge className="gap-1.5" variant="outline">
+                      <IconClock className="h-3 w-3" />
+                      Available
+                    </Badge>
                   )}
                 </TableCell>
                 <TableCell>

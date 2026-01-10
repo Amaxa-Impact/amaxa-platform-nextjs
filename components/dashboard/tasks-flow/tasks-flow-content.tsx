@@ -18,6 +18,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDashboardContext } from "@/components/dashboard/context";
 import { Cursor } from "@/components/dashboard/cursor";
 import type { TaskNodeData } from "@/components/dashboard/sidebar/TaskNode";
+import {
+  getUserDisplayName,
+  type UserOption,
+} from "@/components/ui/user-dropdown";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import usePresence from "@/hooks/use-presence";
@@ -283,11 +287,12 @@ export function TasksFlowContent({ allUsers }: { allUsers: User }) {
           onDataChange: (data: Partial<TaskNodeData>) =>
             handleDataChange(n.id, data),
           projectMembers: projectMembers?.map((member) => {
-            const workosId = member.userId.split("|")[1];
-            const workosUser = allUsers.find((u) => u.id === workosId);
+            const workosUser = allUsers.find((u) => u.id === member.userId);
             return {
               userId: member.userId,
-              name: workosUser?.email || workosUser?.firstName || member.userId,
+              name: workosUser
+                ? getUserDisplayName(workosUser as UserOption)
+                : member.userId,
             };
           }),
         },

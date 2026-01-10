@@ -44,12 +44,11 @@ export function SchedulingSettings({ formId }: SchedulingSettingsProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="font-medium text-sm">Interview Time Slots</h3>
-          <p className="text-muted-foreground text-xs">
-            Create up to {MAX_SLOTS} available time slots for interviews. Each
-            slot is 30 minutes.
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1 space-y-1">
+          <h3 className="font-semibold">Interview Time Slots</h3>
+          <p className="text-muted-foreground text-sm">
+            Create up to {MAX_SLOTS} available time slots for interviews.
           </p>
         </div>
         <Button
@@ -63,9 +62,18 @@ export function SchedulingSettings({ formId }: SchedulingSettingsProps) {
       </div>
 
       {slotCount > 0 && (
-        <p className="text-muted-foreground text-xs">
-          {slotCount} of {MAX_SLOTS} slots used
-        </p>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">Slots used</span>
+            <span className="font-medium">{slotCount} / {MAX_SLOTS}</span>
+          </div>
+          <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full rounded-full bg-primary transition-all"
+              style={{ width: `${(slotCount / MAX_SLOTS) * 100}%` }}
+            />
+          </div>
+        </div>
       )}
 
       <TimeSlotList formId={formId} onEdit={handleEdit} />

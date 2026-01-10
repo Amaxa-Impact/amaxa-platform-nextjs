@@ -201,14 +201,14 @@ export const getUserRole = query({
   returns: v.union(v.literal("coach"), v.literal("member"), v.null()),
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity?.tokenIdentifier) {
+    if (!identity?.subject) {
       return null;
     }
 
     const assignment = await ctx.db
       .query("userToProject")
       .withIndex("by_userId_and_projectId", (q) =>
-        q.eq("userId", identity.tokenIdentifier).eq("projectId", args.projectId)
+        q.eq("userId", identity.subject).eq("projectId", args.projectId)
       )
       .unique();
 
@@ -223,6 +223,6 @@ export const getUserRole = query({
 export const getUserTokenIdentifier = query({
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
-    return identity?.tokenIdentifier ?? null;
+    return identity?.subject ?? null;
   },
 });

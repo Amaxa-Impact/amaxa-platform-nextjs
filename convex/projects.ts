@@ -18,12 +18,12 @@ export const create = mutation({
       description: args.description,
     });
 
-    if (!userId?.tokenIdentifier) {
+    if (!userId?.subject) {
       throw new Error("User not authenticated");
     }
 
     await ctx.db.insert("userToProject", {
-      userId: userId?.tokenIdentifier,
+      userId: userId?.subject,
       projectId,
       role: "coach",
     });

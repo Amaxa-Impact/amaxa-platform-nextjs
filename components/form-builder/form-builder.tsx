@@ -146,17 +146,16 @@ export function FormBuilder({ formId, fields }: FormBuilderProps) {
         ) : (
           <div className="space-y-4">
             {fields?.map((field) => (
-              <button
+              <div
                 aria-label={`Form question ${field.label || "card"}`}
-                className="w-full text-left focus:outline-none"
+                className="w-full focus:outline-none"
                 draggable
                 key={field?._id}
-                onClick={() => setActiveFieldId(field._id)}
                 onDragOver={handleDragOver}
                 onDragStart={(e) => handleDragStart(e, field._id)}
                 onDrop={(e) => handleDrop(e, field?._id)}
+                role="button"
                 tabIndex={0}
-                type="button"
               >
                 <FormQuestionCard
                   field={field}
@@ -165,7 +164,7 @@ export function FormBuilder({ formId, fields }: FormBuilderProps) {
                   onDelete={() => handleDeleteField(field._id)}
                   onDuplicate={() => handleDuplicateField(field)}
                 />{" "}
-              </button>
+              </div>
             ))}
             <Button
               className="w-full border-2 border-dashed text-muted-foreground hover:border-primary hover:text-foreground"

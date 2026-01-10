@@ -25,6 +25,13 @@ import { cn } from "@/lib/utils";
 
 type ResponseStatus = "pending" | "reviewed" | "accepted" | "rejected";
 
+const statusStyles: Record<ResponseStatus, string> = {
+  pending: "bg-amber-500/10 text-amber-500 border-amber-500/20",
+  reviewed: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+  accepted: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+  rejected: "bg-rose-500/10 text-rose-500 border-rose-500/20",
+};
+
 interface ResponseDetailPageProps {
   responseId: Id<"applicationResponses">;
   formId: Id<"applicationForms">;
@@ -115,16 +122,6 @@ export function ResponseDetailPage({
     }
   };
 
-  const statusVariants: Record<
-    ResponseStatus,
-    "default" | "secondary" | "destructive" | "outline"
-  > = {
-    pending: "secondary",
-    reviewed: "outline",
-    accepted: "default",
-    rejected: "destructive",
-  };
-
   return (
     <div className="flex h-full flex-col">
       <main className="flex-1 overflow-auto p-6">
@@ -200,7 +197,7 @@ export function ResponseDetailPage({
                   value={response.status}
                 >
                   <SelectTrigger className="w-44">
-                    <Badge variant={statusVariants[response.status]}>
+                    <Badge className={statusStyles[response.status]} variant="outline">
                       {response.status.charAt(0).toUpperCase() +
                         response.status.slice(1)}
                     </Badge>
@@ -236,27 +233,23 @@ export function ResponseDetailPage({
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Applicant Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div>
-                <span className="text-muted-foreground text-sm">Name</span>
-                <p className="font-medium">{response.applicantName}</p>
-              </div>
-              <div>
-                <span className="text-muted-foreground text-sm">Email</span>
-                <p className="font-medium">
+          <Card className="overflow-hidden">
+            <div className="bg-gradient-to-r from-primary/10 to-transparent px-6 py-6">
+              <div className="flex items-center gap-4">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/20 text-xl font-semibold text-primary">
+                  {response.applicantName.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg">{response.applicantName}</h3>
                   <a
                     className="text-primary hover:underline"
                     href={`mailto:${response.applicantEmail}`}
                   >
                     {response.applicantEmail}
                   </a>
-                </p>
+                </div>
               </div>
-            </CardContent>
+            </div>
           </Card>
 
           {response.fieldResponses.length > 0 && (
@@ -264,16 +257,16 @@ export function ResponseDetailPage({
               <CardHeader>
                 <CardTitle className="text-base">Responses</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {response.fieldResponses.map((fr) => (
+              <div className="divide-y">
+                {response.fieldResponses.map((fr, index) => (
                   <div
-                    className="border-b pb-4 last:border-0 last:pb-0"
+                    className={cn("p-4", index % 2 === 0 && "bg-muted/30")}
                     key={fr.fieldId}
                   >
-                    <span className="text-muted-foreground text-sm">
+                    <span className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
                       {fr.fieldLabel}
                     </span>
-                    <div className="mt-1">
+                    <div className="mt-2">
                       {Array.isArray(fr.value) ? (
                         <div className="flex flex-wrap gap-1">
                           {fr.value.map((v, i) => (
@@ -291,7 +284,7 @@ export function ResponseDetailPage({
                     </div>
                   </div>
                 ))}
-              </CardContent>
+              </div>
             </Card>
           )}
         </div>

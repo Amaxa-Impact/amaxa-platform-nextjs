@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { IconInbox } from "@tabler/icons-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -26,6 +27,14 @@ import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 
 type ResponseStatus = "pending" | "reviewed" | "accepted" | "rejected";
+
+const statusColors = {
+  all: "bg-foreground",
+  pending: "bg-amber-500",
+  reviewed: "bg-blue-500",
+  accepted: "bg-emerald-500",
+  rejected: "bg-rose-500",
+};
 
 export default function ResponsesPageClient() {
   const { formId } = useParams<{ formId: Id<"applicationForms"> }>();
@@ -59,71 +68,106 @@ export default function ResponsesPageClient() {
         <div className="mx-auto max-w-6xl space-y-6">
           <div className="flex gap-2">
             <Button
+              className="gap-2 transition-all"
               onClick={() => setStatusFilter("all")}
               size="sm"
               variant={statusFilter === "all" ? "default" : "outline"}
             >
-              All ({statusCounts.all})
+              <span className={`h-2 w-2 rounded-full ${statusColors.all}`} />
+              All
+              <span className="rounded-full bg-background/20 px-1.5 py-0.5 text-[10px]">
+                {statusCounts.all}
+              </span>
             </Button>
             <Button
+              className="gap-2 transition-all"
               onClick={() => setStatusFilter("pending")}
               size="sm"
               variant={statusFilter === "pending" ? "default" : "outline"}
             >
-              Pending ({statusCounts.pending})
+              <span className={`h-2 w-2 rounded-full ${statusColors.pending}`} />
+              Pending
+              <span className="rounded-full bg-background/20 px-1.5 py-0.5 text-[10px]">
+                {statusCounts.pending}
+              </span>
             </Button>
             <Button
+              className="gap-2 transition-all"
               onClick={() => setStatusFilter("reviewed")}
               size="sm"
               variant={statusFilter === "reviewed" ? "default" : "outline"}
             >
-              Reviewed ({statusCounts.reviewed})
+              <span className={`h-2 w-2 rounded-full ${statusColors.reviewed}`} />
+              Reviewed
+              <span className="rounded-full bg-background/20 px-1.5 py-0.5 text-[10px]">
+                {statusCounts.reviewed}
+              </span>
             </Button>
             <Button
+              className="gap-2 transition-all"
               onClick={() => setStatusFilter("accepted")}
               size="sm"
               variant={statusFilter === "accepted" ? "default" : "outline"}
             >
-              Accepted ({statusCounts.accepted})
+              <span className={`h-2 w-2 rounded-full ${statusColors.accepted}`} />
+              Accepted
+              <span className="rounded-full bg-background/20 px-1.5 py-0.5 text-[10px]">
+                {statusCounts.accepted}
+              </span>
             </Button>
             <Button
+              className="gap-2 transition-all"
               onClick={() => setStatusFilter("rejected")}
               size="sm"
               variant={statusFilter === "rejected" ? "default" : "outline"}
             >
-              Rejected ({statusCounts.rejected})
+              <span className={`h-2 w-2 rounded-full ${statusColors.rejected}`} />
+              Rejected
+              <span className="rounded-full bg-background/20 px-1.5 py-0.5 text-[10px]">
+                {statusCounts.rejected}
+              </span>
             </Button>
           </div>
 
           {filteredResponses?.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center text-muted-foreground">
-                {responses?.length === 0
-                  ? "No applications have been submitted yet."
-                  : "No applications match the selected filter."}
+            <Card className="border-dashed">
+              <CardContent className="flex flex-col items-center py-16 text-center">
+                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50 ring-1 ring-border">
+                  <IconInbox className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <h3 className="mb-2 font-semibold text-lg">
+                  {responses?.length === 0 ? "No applications yet" : "No matching applications"}
+                </h3>
+                <p className="max-w-sm text-muted-foreground">
+                  {responses?.length === 0
+                    ? "Applications will appear here once candidates submit their forms."
+                    : "Try adjusting your filter to see more results."}
+                </p>
               </CardContent>
             </Card>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Applicant</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Submitted</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredResponses?.map((response) => (
-                  <ResponseRow
-                    formId={formId}
-                    key={response._id}
-                    response={response}
-                  />
-                ))}
-              </TableBody>
-            </Table>
+            <Card className="overflow-hidden shadow-sm">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Applicant</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Submitted</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredResponses?.map((response) => (
+                    <ResponseRow
+                      formId={formId}
+                      key={response._id}
+                      response={response}
+                    />
+                  ))}
+                </TableBody>
+              </Table>
+            </Card>
           )}
         </div>
       </main>
@@ -178,19 +222,23 @@ function ResponseRow({
     });
   };
 
-  const statusVariants: Record<
-    ResponseStatus,
-    "default" | "secondary" | "destructive" | "outline"
-  > = {
-    pending: "secondary",
-    reviewed: "outline",
-    accepted: "default",
-    rejected: "destructive",
+  const statusStyles: Record<ResponseStatus, string> = {
+    pending: "bg-amber-500/10 text-amber-500 border-amber-500/20",
+    reviewed: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+    accepted: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+    rejected: "bg-rose-500/10 text-rose-500 border-rose-500/20",
   };
 
   return (
-    <TableRow>
-      <TableCell className="font-medium">{response.applicantName}</TableCell>
+    <TableRow className="group">
+      <TableCell className="font-medium">
+        <div className="flex items-center gap-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs font-semibold uppercase">
+            {response.applicantName.charAt(0)}
+          </div>
+          <span>{response.applicantName}</span>
+        </div>
+      </TableCell>
       <TableCell>{response.applicantEmail}</TableCell>
       <TableCell>
         {new Date(response.submittedAt).toLocaleDateString("en-US", {
@@ -207,7 +255,7 @@ function ResponseRow({
           value={response.status}
         >
           <SelectTrigger className="w-32">
-            <Badge variant={statusVariants[response.status]}>
+            <Badge className={statusStyles[response.status]} variant="outline">
               {response.status.charAt(0).toUpperCase() +
                 response.status.slice(1)}
             </Badge>
@@ -223,16 +271,17 @@ function ResponseRow({
       <TableCell>
         <div className="flex gap-2">
           <Button
+            nativeButton={false}
             render={
               <Link
                 href={`/applications/${formId}/responses/response/${response._id}`}
-              >
-                View
-              </Link>
+              />
             }
             size="sm"
             variant="outline"
-          />
+          >
+            View
+          </Button>
           <Button
             className="text-destructive"
             onClick={handleDelete}

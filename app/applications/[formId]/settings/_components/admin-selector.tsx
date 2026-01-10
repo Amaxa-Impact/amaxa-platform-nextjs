@@ -2,16 +2,7 @@
 
 import { useQuery } from "convex/react";
 import { useEffect, useState } from "react";
-import {
-  Combobox,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxGroup,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-  ComboboxTrigger,
-} from "@/components/kibo-ui/combobox";
+import { UserDropdown } from "@/components/ui/user-dropdown";
 import { api } from "@/convex/_generated/api";
 import type { User } from "@/lib/workos";
 
@@ -36,7 +27,8 @@ export function AdminSelector({
         const response = await fetch("/api/users");
         if (response.ok) {
           const data = await response.json();
-          setAllUsers(data.users || []);
+          // API returns array directly, not { users: [...] }
+          setAllUsers(Array.isArray(data) ? data : []);
         }
       } catch (error) {
         console.error("Failed to fetch users:", error);
@@ -47,17 +39,10 @@ export function AdminSelector({
     fetchUsers();
   }, []);
 
-  const adminOptions =
-    siteAdmins
-      ?.map((admin) => {
-        const workosUserId = admin.userId.split("|")[1];
-        const user = allUsers.find((u) => u.id === workosUserId);
-        return {
-          value: admin.userId,
-          label: user?.email || user?.firstName || admin.userId,
-        };
-      })
-      .filter(Boolean) ?? [];
+  // Filter users to only show those who are site admins
+  const adminUsers = allUsers.filter((user) =>
+    siteAdmins?.some((admin) => admin.userId === user.id)
+  );
 
   if (isLoading || !siteAdmins) {
     return (
@@ -68,26 +53,14 @@ export function AdminSelector({
   }
 
   return (
-    <Combobox
-      data={adminOptions}
+    <UserDropdown
+      className={className}
+      emptyMessage="No admins found."
       onValueChange={onValueChange}
-      type="admin"
+      placeholder="Select admin..."
+      searchPlaceholder="Search admins..."
+      users={adminUsers}
       value={value}
-    >
-      <ComboboxTrigger className={className} />
-      <ComboboxContent>
-        <ComboboxInput placeholder="Search admins..." />
-        <ComboboxList>
-          <ComboboxEmpty>No admins found.</ComboboxEmpty>
-          <ComboboxGroup>
-            {adminOptions.map((admin) => (
-              <ComboboxItem key={admin.value} value={admin.value}>
-                {admin.label}
-              </ComboboxItem>
-            ))}
-          </ComboboxGroup>
-        </ComboboxList>
-      </ComboboxContent>
-    </Combobox>
+    />
   );
 }

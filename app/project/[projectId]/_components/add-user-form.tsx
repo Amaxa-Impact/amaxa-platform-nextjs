@@ -1,8 +1,8 @@
-/** biome-ignore-all lint/correctness/noChildrenProp: This is a workaround to fix the linting error. */
 "use client";
+
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "convex/react";
-import React from "react";
+import { useEffect } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import {
@@ -31,6 +31,7 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
+import { UserDropdown } from "@/components/ui/user-dropdown";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import type { User } from "@/lib/workos";
@@ -41,6 +42,11 @@ const formSchema = z.object({
     message: "Please select a role.",
   }),
 });
+
+const roleOptions = [
+  { label: "Member", value: "member" },
+  { label: "Coach", value: "coach" },
+];
 
 export function AddUserForm({
   allUsers,
@@ -56,15 +62,6 @@ export function AddUserForm({
   existingUserIds?: string[];
 }) {
   const assignUser = useMutation(api.userToProjects.assign);
-
-  const availableUsers = React.useMemo(() => {
-    return allUsers
-      .filter((user) => !existingUserIds?.includes(user.id))
-      .map((user) => ({
-        label: user.email || user.firstName || user.id,
-        value: user.id,
-      }));
-  }, [allUsers, existingUserIds]);
 
   const form = useForm({
     defaultValues: {
@@ -97,7 +94,7 @@ export function AddUserForm({
     },
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!open) {
       form.reset();
     }
@@ -121,41 +118,25 @@ export function AddUserForm({
           }}
         >
           <FieldGroup>
-            <form.Field
-              children={(field) => {
+            <form.Field name="userId">
+              {(field) => {
                 const isInvalid =
                   field.state.meta.isTouched && !field.state.meta.isValid;
 
                 return (
                   <Field data-invalid={isInvalid}>
                     <FieldLabel htmlFor="add-user-form-userId">User</FieldLabel>
-                    <Combobox
-                      data={availableUsers}
-                      onOpenChange={undefined}
+                    <UserDropdown
+                      aria-invalid={isInvalid}
+                      className="w-full"
+                      emptyMessage="No users found."
+                      excludeUserIds={existingUserIds}
+                      id="add-user-form-userId"
                       onValueChange={field.handleChange}
-                      open={undefined}
-                      type="user"
+                      placeholder="Search users..."
+                      users={allUsers}
                       value={field.state.value}
-                    >
-                      <ComboboxTrigger
-                        aria-invalid={isInvalid}
-                        className="w-full"
-                        id="add-user-form-userId"
-                      />
-                      <ComboboxContent>
-                        <ComboboxInput />
-                        <ComboboxList>
-                          <ComboboxEmpty>No users found.</ComboboxEmpty>
-                          <ComboboxGroup>
-                            {availableUsers.map((user) => (
-                              <ComboboxItem key={user.value} value={user.value}>
-                                {user.label}
-                              </ComboboxItem>
-                            ))}
-                          </ComboboxGroup>
-                        </ComboboxList>
-                      </ComboboxContent>
-                    </Combobox>
+                    />
                     <FieldDescription>
                       Search and select a user to add to this project.
                     </FieldDescription>
@@ -165,29 +146,21 @@ export function AddUserForm({
                   </Field>
                 );
               }}
-              name="userId"
-            />
+            </form.Field>
 
-            <form.Field
-              children={(field) => {
+            <form.Field name="role">
+              {(field) => {
                 const isInvalid =
                   field.state.meta.isTouched && !field.state.meta.isValid;
-
-                const roleOptions = [
-                  { label: "Member", value: "member" },
-                  { label: "Coach", value: "coach" },
-                ];
 
                 return (
                   <Field data-invalid={isInvalid}>
                     <FieldLabel htmlFor="add-user-form-role">Role</FieldLabel>
                     <Combobox
                       data={roleOptions}
-                      onOpenChange={undefined}
                       onValueChange={(value) =>
                         field.handleChange(value as "coach" | "member")
                       }
-                      open={undefined}
                       type="role"
                       value={field.state.value}
                     >
@@ -197,7 +170,7 @@ export function AddUserForm({
                         id="add-user-form-role"
                       />
                       <ComboboxContent>
-                        <ComboboxInput />
+                        <ComboboxInput placeholder="Search roles..." />
                         <ComboboxList>
                           <ComboboxEmpty>No roles found.</ComboboxEmpty>
                           <ComboboxGroup>
@@ -219,8 +192,7 @@ export function AddUserForm({
                   </Field>
                 );
               }}
-              name="role"
-            />
+            </form.Field>
           </FieldGroup>
         </form>
 

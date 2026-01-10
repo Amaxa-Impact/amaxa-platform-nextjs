@@ -11,10 +11,10 @@ export async function requireAuth(
   ctx: QueryCtx | MutationCtx
 ): Promise<string> {
   const identity = await ctx.auth.getUserIdentity();
-  if (!identity?.tokenIdentifier) {
+  if (!identity?.subject) {
     throw new Error("User not authenticated");
   }
-  return identity.tokenIdentifier;
+  return identity.subject;
 }
 
 /**
@@ -125,6 +125,8 @@ export async function requireSiteAdmin(
   ctx: QueryCtx | MutationCtx
 ): Promise<string> {
   const userId = await requireAuth(ctx);
+  console.log("userId:", userId);
+
   await assertSiteAdmin(ctx, userId);
   return userId;
 }
